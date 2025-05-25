@@ -1,0 +1,43 @@
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - backend_data:/app/data
+    env_file:
+      - ./backend/.env
+    environment:
+      - BLAST_BIN_PATH=
+    restart: unless-stopped
+    depends_on:
+      - blast-db
+  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env
+    restart: unless-stopped
+    depends_on:
+      - backend
+  
+  blast-db:
+    image: ncbi/blast
+    volumes:
+      - blast_db:/blast/db
+    command: ["sh", "-c", "while true; do sleep 30; done"]
+
+volumes:
+  backend_data:
+  blast_db:
