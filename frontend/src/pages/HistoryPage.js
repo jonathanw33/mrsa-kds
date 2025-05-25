@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Badge, Button, Alert, Card } from 'react-bootstrap';
+import { Container, Table, Badge, Button, Alert, Card, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { analysisService } from '../services/apiService';
 
@@ -8,128 +8,119 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Format date string
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleString(undefined, options);
   };
 
-  // Get badge variant based on resistance status
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'resistant':
-        return 'danger';
-      case 'susceptible':
-        return 'success';
-      case 'intermediate':
-        return 'warning';
-      default:
-        return 'secondary';
+    switch (status?.toLowerCase()) {
+      case 'resistant': return 'danger';
+      case 'susceptible': return 'success';
+      case 'intermediate': return 'warning';
+      default: return 'secondary';
     }
   };
 
   useEffect(() => {
     const fetchHistory = async () => {
-      setLoading(true);
-      
+      setLoading(true); setError(null);
       try {
-        // First try to get history from the API
         const response = await analysisService.getAnalysisHistory();
-        setHistory(response.data);
+        setHistory(response.data || []);
       } catch (err) {
-        console.log('Error fetching from API, using local storage instead');
-        
-        // Fall back to local storage if API fails
         const savedResults = JSON.parse(localStorage.getItem('analysisResults') || '[]');
         setHistory(savedResults);
-        
-        if (err.response?.status !== 404) {
-          // Show error only if it's not a 404 (empty history)
-          setError('Could not fetch analysis history from server.');
+        if (err.response?.status !== 404 || savedResults.length === 0) {
+           setError('Could not fetch analysis history from server. Displaying locally saved data if available.');
         }
-      } finally {
-        setLoading(false);
-      }
+      } finally { setLoading(false); }
     };
-
     fetchHistory();
   }, []);
 
-  // Handle delete analysis (local storage only for demo)
   const handleDelete = (index) => {
-    const updatedHistory = [...history];
-    updatedHistory.splice(index, 1);
+    const itemToDelete = history[index]; 
+    const updatedHistory = history.filter((_, i) => i !== index);
     setHistory(updatedHistory);
-    localStorage.setItem('analysisResults', JSON.stringify(updatedHistory));
+    // Hapus juga dari local storage
+    const localHistory = JSON.parse(localStorage.getItem('analysisResults') || '[]');
+    const updatedLocalHistory = localHistory.filter(h => 
+        !( (itemToDelete.id && h.id === itemToDelete.id) || 
+           (itemToDelete.savedAt && h.savedAt === itemToDelete.savedAt) )
+    );
+    localStorage.setItem('analysisResults', JSON.stringify(updatedLocalHistory));
   };
 
   if (loading) {
     return (
       <Container className="py-5 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-2">Loading analysis history...</p>
+        <Spinner animation="border" variant="primary" style={{ width: '3rem', height: '3rem' }} />
+        <p className="mt-3 lead text-muted">Loading analysis history...</p>
       </Container>
     );
   }
 
   return (
     <Container className="py-4">
-      <h1 className="mb-4">Analysis History</h1>
+      <h1 className="mb-4 fw-bold text-center">Analysis History</h1>
       
-      {error && <Alert variant="warning">{error}</Alert>}
+      {error && <Alert variant="warning" className="shadow-sm">{error}</Alert>} {/* shadow-sm dari index.css alert style */}
       
-      {history.length === 0 ? (
-        <Card className="text-center p-5">
+      {history.length === 0 && !loading ? (
+        <Card className="text-center p-4 p-md-5 mt-4 shadow-sm"> {/* shadow-sm untuk card kosong */}
           <Card.Body>
-            <h3>No Analysis History</h3>
-            <p className="mb-4">You haven't performed any sequence analyses yet.</p>
-            <Button as={Link} to="/analysis" variant="primary">
+            {/* Bisa tambahkan elemen visual dari Bootstrap jika ada, misal ikon teks atau SVG sederhana */}
+            <Card.Title as="h3" className="mb-3">No Analysis History Found</Card.Title>
+            <Card.Text className="text-muted mb-4">
+              It looks like you haven't performed any sequence analyses yet, or your history is empty.
+            </Card.Text>
+            <Button as={Link} to="/analysis" variant="primary" size="lg" className="px-4">
               Start Your First Analysis
             </Button>
           </Card.Body>
         </Card>
       ) : (
-        <div>
-          <p className="mb-4">View your previous sequence analyses and their results.</p>
-          
-          <Table responsive hover className="align-middle">
-            <thead className="bg-light">
+        // Table akan otomatis mendapat style dari .table-responsive dan .table di index.css
+        <div className="table-responsive"> 
+          <Table hover striped className="align-middle"> {/* striped dari bootstrap, hover dari index.css */}
+            {/* thead akan mendapat style dari .table thead th */}
+            <thead>
               <tr>
-                <th>Date</th>
-                <th>Sample ID</th>
-                <th>Status</th>
-                <th>Confidence</th>
-                <th>Identified Genes</th>
-                <th>Actions</th>
+                <th className="px-3">Date</th>
+                <th className="px-3">Sample ID</th>
+                <th className="px-3">Status</th>
+                <th className="px-3">Confidence</th>
+                <th className="px-3">Identified Genes</th>
+                <th className="px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               {history.map((item, index) => (
-                <tr key={index}>
-                  <td>{formatDate(item.analysis_timestamp || item.savedAt)}</td>
-                  <td>{item.sample_id}</td>
-                  <td>
-                    <Badge bg={getStatusBadge(item.resistance_status)}>
-                      {item.resistance_status.charAt(0).toUpperCase() + item.resistance_status.slice(1)}
+                <tr key={item.id || item.savedAt || index}> {/* pastikan key unik */}
+                  <td className="px-3">{formatDate(item.analysis_timestamp || item.savedAt)}</td>
+                  <td className="px-3 text-truncate" style={{maxWidth: '150px'}} title={item.sample_id}>{item.sample_id || 'N/A'}</td>
+                  <td className="px-3">
+                    <Badge pill bg={getStatusBadge(item.resistance_status)} className="px-2 py-1 fs-small"> {/* fs-small untuk ukuran font badge */}
+                      {item.resistance_status ? item.resistance_status.charAt(0).toUpperCase() + item.resistance_status.slice(1) : 'N/A'}
                     </Badge>
                   </td>
-                  <td>{item.confidence_score.toFixed(1)}%</td>
-                  <td>
+                  <td className="px-3">{item.confidence_score?.toFixed(1) || 'N/A'}%</td>
+                  <td className="px-3">
                     {item.identified_genes && item.identified_genes.length > 0 ? (
-                      <span>{item.identified_genes.join(', ')}</span>
+                      <span className="d-inline-block text-truncate" style={{maxWidth: '200px'}} title={item.identified_genes.join(', ')}>{item.identified_genes.join(', ')}</span>
                     ) : (
                       <span className="text-muted">None</span>
                     )}
                   </td>
-                  <td>
-                    <div className="d-flex gap-2">
+                  <td className="px-3 text-center">
+                    <div className="d-flex gap-2 justify-content-center">
                       <Button 
                         as={Link} 
-                        to={`/results/${item.id || index}`}
+                        to={`/results/${item.id || item.savedAt || index}`} // Gunakan ID yang lebih robust jika ada
                         variant="outline-primary"
                         size="sm"
+                        title="View Details"
                       >
                         View
                       </Button>
@@ -137,6 +128,7 @@ const HistoryPage = () => {
                         variant="outline-danger"
                         size="sm"
                         onClick={() => handleDelete(index)}
+                        title="Delete Analysis"
                       >
                         Delete
                       </Button>

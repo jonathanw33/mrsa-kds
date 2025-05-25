@@ -5,32 +5,154 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #e9ecef; /* Latar belakang body lebih gelap agar card putih menonjol */
+  color: #343a40; /* Warna teks default yang sedikit lebih gelap untuk kontras */
+  line-height: 1.6; /* Keterbacaan teks lebih baik */
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(27,31,35,.05);
+  border-radius: 3px;
 }
 
-/* Custom styles */
-.border-dashed {
-  border-style: dashed !important;
+/* --- Heading Styles --- */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600; /* Heading lebih tegas */
+  color: #2c3e50; /* Warna heading yang lebih modern */
 }
 
-/* Analysis result styling */
-.analysis-result .card {
-  box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+/* --- Card Styling --- */
+.card {
+  border: none; /* Hapus border default, andalkan shadow */
+  border-radius: 0.5rem; /* Radius lebih besar untuk tampilan modern */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Shadow lebih menonjol dan lembut */
+  margin-bottom: 1.5rem; /* Spasi default antar card */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Transisi halus */
+  background-color: #ffffff; /* Pastikan card selalu putih di atas body abu-abu */
 }
 
-/* Make table headers sticky */
+.card.interactive-card:hover { /* Anda bisa menambahkan kelas .interactive-card pada Card di JSX */
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background-color: #f8f9fa; /* Latar header card tetap terang */
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem; /* Sedikit lebih besar untuk header card */
+  font-weight: 600;
+  color: #495057;
+}
+
+.card-header.bg-primary { /* Untuk header card yang ingin di-highlight */
+  color: #fff;
+  border-bottom: none;
+}
+.card-header.bg-primary h1, .card-header.bg-primary h2, .card-header.bg-primary h3,
+.card-header.bg-primary h4, .card-header.bg-primary h5, .card-header.bg-primary h6 {
+  color: #fff;
+}
+
+
+/* --- Button Styling --- */
+.btn {
+  padding: 0.6rem 1.2rem; /* Padding tombol lebih nyaman */
+  font-weight: 500;
+  border-radius: 0.3rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+.btn-primary:hover {
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-secondary:hover,
+.btn-outline-danger:hover {
+  transform: translateY(-2px);
+}
+.btn-light:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+
+/* --- Table Styling --- */
 .table-responsive {
   max-height: 600px;
   overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.3rem;
+  background-color: #fff;
+}
+
+.table {
+  margin-bottom: 0;
 }
 
 .table thead th {
   position: sticky;
   top: 0;
-  background-color: #f8f9fa;
+  background-color: #f1f3f5;
   z-index: 1;
+  border-bottom-width: 2px;
+  border-top-width: 0;
+  font-weight: 600;
+  color: #495057;
+  padding: 0.9rem 0.75rem;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
+
+/* --- Alert Styling --- */
+.alert {
+  border-left-width: 4px;
+  border-radius: 0.3rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+}
+.alert-heading {
+  font-weight: 600;
+}
+
+/* --- Form Styling --- */
+.form-control {
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.3rem;
+  border: 1px solid #ced4da;
+}
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #80bdff;
+}
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Tambahkan atau modifikasi ini di index.css Anda */
+.footer-link {
+  color: rgba(255, 255, 255, 0.5) !important; /* Warna text-white-50 */
+  text-decoration: underline !important; /* PENTING: SELALU ADA GARIS BAWAH */
+  transition: color 0.2s ease-in-out;
+}
+
+.footer-link:hover {
+  color: #ffffff !important; /* Warna putih terang saat hover */
+  text-decoration: underline !important; /* PENTING: TETAP ADA GARIS BAWAH SAAT HOVER */
 }
