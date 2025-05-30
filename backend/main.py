@@ -2,12 +2,20 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
+import logging
 from dotenv import load_dotenv
 from api.routes import resistance_analysis, auth, blast
 from utils.config import Settings
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Initialize settings
 settings = Settings()

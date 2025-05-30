@@ -59,7 +59,7 @@ export const analysisService = {
   
   // Get analysis result by ID
   getAnalysisResult: async (id) => {
-    return api.get(`/api/results/${id}`);
+    return api.get(`/api/history/${id}`);
   },
 };
 

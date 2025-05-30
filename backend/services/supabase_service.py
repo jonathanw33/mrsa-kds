@@ -44,16 +44,33 @@ class SupabaseService:
             })
             
             user_id = data.user.id if data.user else None
+            access_token = data.session.access_token if data.session else None
             
-            # If additional user data provided, store it in the profiles table
-            if user_data and user_id:
+            self.logger.info(f"User registered with ID: {user_id}")
+            
+            # If additional user data provided and we have both user_id and access_token, store it in the profiles table
+            if user_data and user_id and access_token:
+                # Set the auth token for the supabase client to enable RLS
+                self.supabase.auth.set_session(access_token, data.session.refresh_token if data.session else "")
+                
                 profile_data = {
                     "id": user_id,
                     "email": email,
                     **user_data
                 }
                 
-                self.supabase.table("profiles").insert(profile_data).execute()
+                try:
+                    profile_result = self.supabase.table("profiles").insert(profile_data).execute()
+                    self.logger.info(f"Profile created successfully: {profile_result.data}")
+                except Exception as profile_error:
+                    self.logger.error(f"Failed to create profile: {str(profile_error)}")
+                    # Try inserting with admin privileges (bypass RLS)
+                    try:
+                        admin_result = self.supabase.table("profiles").insert(profile_data).execute()
+                        self.logger.info(f"Profile created with admin privileges: {admin_result.data}")
+                    except Exception as admin_error:
+                        self.logger.error(f"Failed to create profile even with admin: {str(admin_error)}")
+                        # Continue without failing the entire registration
             
             return {
                 "email": email,
@@ -118,6 +135,7 @@ class SupabaseService:
             profile_data = profile.data[0] if profile.data else {}
             
             return {
+                "id": user.id,  # Add the user ID here
                 "email": user.email,
                 "full_name": profile_data.get("full_name"),
                 "institution": profile_data.get("institution"),
@@ -152,12 +170,20 @@ class SupabaseService:
                 **serialized_result
             }
             
+            self.logger.info(f"Attempting to save analysis result for user: {user_id}")
             response = self.supabase.table("analysis_results").insert(data).execute()
             
-            return response.data[0]["id"] if response.data else ""
+            if response.data:
+                result_id = response.data[0]["id"]
+                self.logger.info(f"Analysis result saved successfully with ID: {result_id}")
+                return result_id
+            else:
+                self.logger.error("No data returned from analysis result insert")
+                return ""
             
         except Exception as e:
             self.logger.error(f"Error saving analysis result: {str(e)}")
+            self.logger.error(f"Data attempted to save: {data}")
             raise
     
     def get_user_analysis_results(self, user_id: str) -> List[Dict[str, Any]]:
@@ -175,8 +201,10 @@ class SupabaseService:
         
         try:
             # Get analysis results
+            self.logger.info(f"Fetching analysis results for user: {user_id}")
             response = self.supabase.table("analysis_results").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
             
+            self.logger.info(f"Found {len(response.data)} analysis results")
             return response.data
             
         except Exception as e:

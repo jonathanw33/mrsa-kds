@@ -19,6 +19,7 @@ class TokenData(BaseModel):
     email: Optional[str] = None
 
 class User(BaseModel):
+    id: str
     email: str
     full_name: Optional[str] = None
     institution: Optional[str] = None
@@ -67,12 +68,26 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+async def get_current_user_dependency(token: str = Depends(oauth2_scheme)) -> User:
+    """Dependency function to get current user as User model"""
+    try:
+        user_data = supabase_service.get_user_from_token(token)
+        # Convert dict to User model
+        return User(**user_data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
 @router.get("/users/me", response_model=User)
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     """Get the current user profile"""
     try:
         user_data = supabase_service.get_user_from_token(token)
-        return user_data
+        # Convert dict to User model
+        return User(**user_data)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
