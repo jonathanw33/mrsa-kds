@@ -1,151 +1,121 @@
 import React from 'react';
-import { Container, Row, Col, Card, ListGroup, Accordion } from 'react-bootstrap';
+import { Container, Row, Col, Card, Accordion, ListGroup } from 'react-bootstrap';
 
 const AboutPage = () => {
   return (
-    <Container className="py-4">
-      <h1 className="mb-4">About MRSA Resistance Gene Detector</h1>
-      
-      <Row className="mb-5">
-        <Col lg={8}>
-          <h2 className="h4 mb-3">Project Overview</h2>
-          <p>
-            The MRSA Resistance Gene Detector is a specialized tool designed to identify antibiotic resistance in bacterial samples by analyzing DNA sequences for the presence of resistance genes, focusing primarily on Methicillin-Resistant Staphylococcus aureus (MRSA).
+    <Container className="py-5">
+      {/* --- Bagian Header --- */}
+      <Row className="justify-content-center mb-5">
+        <Col lg={10} className="text-center">
+          <h1 className="display-4 fw-bold mb-3">About The Project</h1>
+          <p className="lead text-muted mx-auto" style={{ maxWidth: '700px' }}>
+            A specialized tool for identifying antibiotic resistance by analyzing DNA sequences, with a primary focus on MRSA.
           </p>
-          <p>
-            Using advanced sequence alignment algorithms, our tool can quickly identify key resistance markers such as the mecA gene (~2kb) that confers resistance to beta-lactam antibiotics, including methicillin.
-          </p>
-          <p>
-            This tool helps laboratories quickly screen bacterial samples for antibiotic resistance, enabling faster treatment decisions and better antibiotic stewardship.
-          </p>
-        </Col>
-        <Col lg={4}>
-          <Card className="border-0 shadow">
-            <Card.Img variant="top" src="/images/mrsa-microscope.jpg" alt="MRSA under microscope" />
-            <Card.Body className="bg-light">
-              <Card.Text className="text-center">
-                <small>Microscopic view of MRSA (Methicillin-Resistant Staphylococcus aureus) bacteria</small>
-              </Card.Text>
-            </Card.Body>
-          </Card>
         </Col>
       </Row>
       
-      <Row className="mb-5">
-        <Col>
-          <h2 className="h4 mb-3">Technical Approach</h2>
-          <Accordion defaultActiveKey="0">
-            <Accordion.Item eventKey="0">
-              <Accordion.Header>Data Sources</Accordion.Header>
-              <Accordion.Body>
-                <p>Our tool utilizes reference data from established sources:</p>
-                <ul>
-                  <li>Reference database of resistance genes (particularly mecA ~2kb)</li>
-                  <li>Source: National Center for Biotechnology Information (NCBI) GenBank</li>
-                  <li>Database size: ~50 reference sequences (stored locally or accessed via the NCBI API)</li>
-                </ul>
-              </Accordion.Body>
-            </Accordion.Item>
-            <Accordion.Item eventKey="1">
-              <Accordion.Header>Computing Methods</Accordion.Header>
-              <Accordion.Body>
-                <p>Our analysis utilizes sophisticated bioinformatics approaches:</p>
-                <ul>
-                  <li><strong>Sequence alignment:</strong> Using the BLAST algorithm to align query sequences against reference resistance genes</li>
-                  <li><strong>Pattern matching:</strong> Identifying key resistance markers through sequence homology</li>
-                  <li><strong>Statistical analysis:</strong> Calculating alignment scores and confidence metrics for resistance determination</li>
-                </ul>
-              </Accordion.Body>
-            </Accordion.Item>
-            <Accordion.Item eventKey="2">
-              <Accordion.Header>Input/Output System</Accordion.Header>
-              <Accordion.Body>
-                <p><strong>Input:</strong></p>
-                <ul>
-                  <li>FASTA file containing bacterial DNA sequence</li>
-                </ul>
-                <p><strong>Output:</strong></p>
-                <ul>
-                  <li>Resistance status (Resistant/Susceptible)</li>
-                  <li>Confidence score (0-100%)</li>
-                  <li>Alignment results showing matching regions</li>
-                  <li>Treatment recommendations (utilizing AI for personalized suggestions)</li>
-                </ul>
-              </Accordion.Body>
-            </Accordion.Item>
-          </Accordion>
-        </Col>
-      </Row>
+      {/* --- Bagian Overview --- */}
+      <Card className="mb-4 shadow-sm">
+        <Card.Body className="p-4 p-lg-5">
+          <Row className="align-items-center">
+            <Col lg={7} className="mb-4 mb-lg-0">
+              <h2 className="h3 mb-3 fw-bold">Project Overview</h2>
+              <p>
+                The MRSA Resistance Gene Detector is a tool designed to identify antibiotic resistance in bacterial samples by analyzing DNA sequences. It focuses primarily on Methicillin-Resistant Staphylococcus aureus (MRSA).
+              </p>
+              <p>
+                Using advanced sequence alignment algorithms like BLAST, our tool quickly identifies key resistance markers, such as the <strong>mecA gene</strong>, which confers resistance to beta-lactam antibiotics.
+              </p>
+              <p className="mb-0">
+                This tool helps laboratories screen bacterial samples efficiently, enabling faster treatment decisions and promoting better antibiotic stewardship.
+              </p>
+            </Col>
+            <Col lg={5} className="text-center">
+              <img 
+                src="/images/mrsa-microscope.jpg" 
+                alt="MRSA under microscope" 
+                className="img-fluid rounded-3 shadow"
+                style={{maxHeight: '300px'}}
+              />
+              <p className="text-muted mt-2 fst-italic"><small>Microscopic view of MRSA bacteria.</small></p>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
       
-      <Row className="mb-5">
-        <Col>
-          <h2 className="h4 mb-3">Development Team</h2>
-          <p>This project was developed by a team of students from Institut Teknologi Bandung (ITB):</p>
-          <ListGroup>
-            <ListGroup.Item className="d-flex justify-content-between align-items-start">
-              <div>
-                <div className="fw-bold">Jonathan Wiguna</div>
-                <div className="text-muted">Student ID: 18222019</div>
-              </div>
-              <div>Backend Development, Sequence Analysis</div>
-            </ListGroup.Item>
-            <ListGroup.Item className="d-flex justify-content-between align-items-start">
-              <div>
-                <div className="fw-bold">Harry Truman Suhalim</div>
-                <div className="text-muted">Student ID: 18222081</div>
-              </div>
-              <div>Frontend Development, User Interface</div>
-            </ListGroup.Item>
-            <ListGroup.Item className="d-flex justify-content-between align-items-start">
-              <div>
-                <div className="fw-bold">Steven Adrian Corne</div>
-                <div className="text-muted">Student ID: 18222101</div>
-              </div>
-              <div>Data Processing, Algorithm Implementation</div>
-            </ListGroup.Item>
-          </ListGroup>
-        </Col>
-      </Row>
-      
+      {/* --- Bagian Technical & Team dalam Dua Kolom --- */}
       <Row>
-        <Col>
-          <h2 className="h4 mb-3">References & Resources</h2>
-          <Card>
+        <Col lg={7}>
+          {/* --- Bagian Technical Approach --- */}
+          <Card className="mb-4 shadow-sm">
+            <Card.Header as="h3" className="py-3 h5">Technical Approach</Card.Header>
             <Card.Body>
-              <ListGroup variant="flush">
-                <ListGroup.Item>
-                  <strong>NCBI GenBank</strong> - Source of reference sequences for resistance genes
-                  <br />
-                  <a href="https://www.ncbi.nlm.nih.gov/genbank/" target="_blank" rel="noopener noreferrer">
-                    https://www.ncbi.nlm.nih.gov/genbank/
-                  </a>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <strong>BLAST Algorithm</strong> - Used for sequence alignment
-                  <br />
-                  <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi" target="_blank" rel="noopener noreferrer">
-                    https://blast.ncbi.nlm.nih.gov/Blast.cgi
-                  </a>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <strong>CDC - MRSA Information</strong> - Background on MRSA
-                  <br />
-                  <a href="https://www.cdc.gov/mrsa/index.html" target="_blank" rel="noopener noreferrer">
-                    https://www.cdc.gov/mrsa/index.html
-                  </a>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <strong>Biopython</strong> - Python tools for computational molecular biology
-                  <br />
-                  <a href="https://biopython.org/" target="_blank" rel="noopener noreferrer">
-                    https://biopython.org/
-                  </a>
-                </ListGroup.Item>
-              </ListGroup>
+              <Accordion defaultActiveKey="0" flush>
+                <Accordion.Item eventKey="0">
+                  <Accordion.Header>Data Sources</Accordion.Header>
+                  <Accordion.Body>
+                    Our tool utilizes reference data from the <strong>National Center for Biotechnology Information (NCBI) GenBank</strong>, focusing on a curated database of resistance genes like mecA.
+                  </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1">
+                  <Accordion.Header>Computing Methods</Accordion.Header>
+                  <Accordion.Body>
+                    We employ the <strong>BLAST algorithm</strong> for sequence alignment, pattern matching to identify resistance markers, and statistical analysis to calculate confidence scores.
+                  </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="2">
+                  <Accordion.Header>Input & Output</Accordion.Header>
+                  <Accordion.Body>
+                    <strong>Input:</strong> A FASTA file containing a bacterial DNA sequence.
+                    <br/>
+                    <strong>Output:</strong> A detailed report including resistance status, confidence score, matching gene regions, and AI-powered treatment recommendations.
+                  </Accordion.Body>
+                </Accordion.Item>
+              </Accordion>
             </Card.Body>
           </Card>
         </Col>
+        <Col lg={5}>
+          {/* --- Bagian Team --- */}
+          <Card className="mb-4 shadow-sm">
+            <Card.Header as="h3" className="py-3 h5">Development Team</Card.Header>
+            <ListGroup variant="flush">
+              {[
+                { name: "Jonathan Wiguna", id: "18222019", role: "Backend, Sequence Analysis" },
+                { name: "Harry Truman Suhalim", id: "18222081", role: "Frontend, UI/UX" },
+                { name: "Steven Adrian Corne", id: "18222101", role: "Data, Algorithm" }
+              ].map((member, index) => (
+                <ListGroup.Item key={index} className="px-3 py-3">
+                  <div className="d-flex justify-content-between">
+                    <div className="fw-bold">{member.name}</div>
+                    <small className="text-muted">{member.id}</small>
+                  </div>
+                  <div className="text-muted small">{member.role}</div>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          </Card>
+        </Col>
       </Row>
+
+      {/* --- Bagian Referensi --- */}
+       <Card className="shadow-sm">
+        <Card.Header as="h3" className="py-3 h5">References & Resources</Card.Header>
+        <ListGroup variant="flush">
+          {[
+            { name: "NCBI GenBank", text: "Source of reference sequences.", url: "https://www.ncbi.nlm.nih.gov/genbank/" },
+            { name: "BLAST Algorithm", text: "Core tool for sequence alignment.", url: "https://blast.ncbi.nlm.nih.gov/Blast.cgi" }
+          ].map((ref, index) => (
+            <ListGroup.Item key={index} className="p-3">
+              <strong>{ref.name}</strong> - <span className="text-muted">{ref.text}</span>
+              <br />
+              <a href={ref.url} target="_blank" rel="noopener noreferrer" className="text-decoration-none small">
+                {ref.url}
+              </a>
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+      </Card>
     </Container>
   );
 };

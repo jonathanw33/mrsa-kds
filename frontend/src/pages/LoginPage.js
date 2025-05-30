@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Card, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Card, Form, Button, Alert, Row, Col, Spinner } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,89 +13,62 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Get the return URL from location state or default to home
   const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      setError('Please enter both email and password');
-      return;
-    }
-    
-    setLoading(true);
+    setLoading(true); 
     setError(null);
-    
     try {
-      const { error } = await login(email, password);
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Redirect to the page they came from or home
+      const { error: loginError } = await login(email, password);
+      if (loginError) throw loginError;
       navigate(from, { replace: true });
-      
     } catch (err) {
-      console.error('Login error:', err);
       setError(err.message || 'Failed to login. Please check your credentials.');
-    } finally {
-      setLoading(false);
+    } finally { 
+      setLoading(false); 
     }
   };
 
   return (
-    <Container className="py-5">
-      <div className="d-flex justify-content-center">
-        <Card style={{ maxWidth: '450px', width: '100%' }}>
-          <Card.Header className="bg-primary text-white text-center py-3">
-            <h2 className="mb-0">Login</h2>
-          </Card.Header>
-          <Card.Body className="p-4">
-            {error && <Alert variant="danger">{error}</Alert>}
-            
-            <Form onSubmit={handleSubmit}>
-              <Form.Group className="mb-3">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </Form.Group>
+    <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
+      <Row className="justify-content-center w-100">
+        <Col md={8} lg={6} xl={5}>
+          <Card className="shadow-lg">
+            <Card.Header className="text-center py-4 bg-primary text-white">
+              <h2 className="mb-0">Welcome Back!</h2>
+            </Card.Header>
+            <Card.Body className="p-4 p-lg-5">
+              <p className="text-center text-muted mb-4">Login to access your dashboard.</p>
+              {error && <Alert variant="danger">{error}</Alert>}
               
-              <Form.Group className="mb-4">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </Form.Group>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="loginEmail">
+                  <Form.Label>Email address</Form.Label>
+                  <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </Form.Group>
+                
+                <Form.Group className="mb-4" controlId="loginPassword">
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                </Form.Group>
+                
+                <div className="d-grid">
+                  <Button variant="primary" type="submit" disabled={loading} size="lg">
+                    {loading ? <Spinner as="span" animation="border" size="sm" /> : "Login"}
+                  </Button>
+                </div>
+              </Form>
               
-              <Button 
-                variant="primary" 
-                type="submit" 
-                className="w-100 py-2"
-                disabled={loading}
-              >
-                {loading ? 'Logging in...' : 'Login'}
-              </Button>
-            </Form>
-            
-            <div className="text-center mt-4">
-              <p className="mb-0">
-                Don't have an account? <Link to="/register">Register</Link>
-              </p>
-            </div>
-          </Card.Body>
-        </Card>
-      </div>
+              <div className="text-center mt-4">
+                <small className="text-muted">
+                  Don't have an account? <Link to="/register">Register here</Link>
+                </small>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </Container>
   );
 };

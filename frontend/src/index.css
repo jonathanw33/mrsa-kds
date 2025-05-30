@@ -1,36 +1,195 @@
+/* --- Import Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* --- CSS Variables for Easy Theme Management (TEMA BIRU-UNGU) --- */
+:root {
+  --primary-color: #6a11cb;   /* Warna utama: Ungu */
+  --secondary-color: #2575fc; /* Warna sekunder: Biru */
+  --gradient-bg: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  --background-light: #f4f7fc;
+  --background-white: #ffffff;
+  --text-dark: #1e293b;
+  --text-muted: #64748b;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --card-shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --border-radius: 0.75rem;
+}
+
+/* --- Global Styles --- */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-light);
+  color: var(--text-dark);
+  line-height: 1.7;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* --- Heading Styles --- */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--text-dark);
+}
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-weight: 700 !important;
 }
 
-/* Custom styles */
-.border-dashed {
-  border-style: dashed !important;
+/* --- Styling untuk Komponen React-Bootstrap --- */
+.card {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: var(--background-white);
 }
 
-/* Analysis result styling */
-.analysis-result .card {
-  box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+.card.interactive-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--card-shadow-hover);
 }
 
-/* Make table headers sticky */
-.table-responsive {
-  max-height: 600px;
-  overflow-y: auto;
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1.25rem 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-dark);
 }
 
-.table thead th {
-  position: sticky;
-  top: 0;
+/* --- Override Bootstrap Primary Classes --- */
+.bg-primary {
+  background: var(--gradient-bg) !important;
+  border-color: transparent !important;
+}
+
+/* Memastikan teks di header bg-primary tetap putih */
+.bg-primary.card-header h1, 
+.bg-primary.card-header h2, 
+.bg-primary.card-header h3,
+.bg-primary.card-header h4, 
+.bg-primary.card-header h5, 
+.bg-primary.card-header h6 {
+  color: #fff !important;
+}
+
+/* Mengganti warna teks primary agar sesuai tema */
+.text-primary {
+  color: var(--secondary-color) !important; /* Menggunakan warna biru sebagai warna teks utama */
+}
+
+/* --- Button Styling --- */
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
+}
+.btn-lg {
+  padding: 1rem 2.5rem;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  background: var(--gradient-bg);
+  border: none;
+  color: #fff;
+}
+.btn-primary:hover {
+  color: #fff;
+  opacity: 0.9;
+}
+
+.btn-light {
+  background-color: var(--background-white);
+  color: var(--secondary-color); /* Disesuaikan dengan warna biru */
+  border: 1px solid var(--background-white);
+}
+.btn-light:hover {
   background-color: #f8f9fa;
+  color: var(--primary-color); /* Hover ke warna ungu */
+}
+
+/* --- Kelas Kustom untuk Tata Letak Halaman --- */
+.hero-section {
+  background: var(--gradient-bg);
+  padding: 6rem 0;
+  border-radius: 0 0 3rem 3rem;
+}
+
+.feature-number {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--gradient-bg);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 auto 1.5rem auto;
+}
+
+.how-it-works-section {
+  padding: 5rem 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  height: 100%;
+  width: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+}
+
+.timeline-item {
+  margin-bottom: 2rem;
+  position: relative;
+  padding-left: 50px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gradient-bg);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
   z-index: 1;
+}
+
+footer.footer,
+footer,
+.footer,
+footer.text-light,
+footer.py-4 {
+  background-color: #1a1f3a !important;
+  background: #1a1f3a !important;
 }

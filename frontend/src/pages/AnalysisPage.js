@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Card, Form, Alert, Button, Spinner } from 'react-bootstrap';
+import { Container, Card, Form, Alert, Button, Spinner, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import FileUpload from '../components/FileUpload';
-import AnalysisResult from '../components/AnalysisResult';
+import FileUpload from '../components/FileUpload'; 
+import AnalysisResult from '../components/AnalysisResult'; 
 import { analysisService } from '../services/apiService';
 
 const AnalysisPage = () => {
@@ -15,39 +15,20 @@ const AnalysisPage = () => {
   const handleFileUpload = async (file) => {
     setLoading(true);
     setError(null);
-    
+    setResult(null); // Clear previous results
     try {
       const response = await analysisService.analyzeSequence(file, threshold);
       setResult(response.data);
-      
-      // Save result to local storage for history
+      // Simpan ke local storage
       const savedResults = JSON.parse(localStorage.getItem('analysisResults') || '[]');
-      const resultWithTimestamp = {
-        ...response.data,
-        savedAt: new Date().toISOString()
-      };
-      
-      // Add to the beginning of the array (most recent first)
+      const resultWithTimestamp = { ...response.data, savedAt: new Date().toISOString() };
       savedResults.unshift(resultWithTimestamp);
-      
-      // Keep only the last 10 results
-      const trimmedResults = savedResults.slice(0, 10);
-      
-      // Save back to local storage
-      localStorage.setItem('analysisResults', JSON.stringify(trimmedResults));
-      
+      localStorage.setItem('analysisResults', JSON.stringify(savedResults.slice(0, 10)));
     } catch (err) {
-      console.error('Error analyzing sequence:', err);
-      setError(err.response?.data?.detail || 'Error analyzing sequence');
+      setError(err.response?.data?.detail || 'An error occurred during analysis.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSaveResult = () => {
-    // In a real app, this would save to the user's history in the database
-    // For now, we'll just redirect to the history page
-    navigate('/history');
   };
 
   const handleNewAnalysis = () => {
@@ -56,67 +37,68 @@ const AnalysisPage = () => {
   };
 
   return (
-    <Container>
-      <h1 className="mb-4">Sequence Analysis</h1>
-      
-      {!result ? (
-        <Card>
-          <Card.Header>
-            <h4 className="mb-0">Upload Sequence</h4>
-          </Card.Header>
-          <Card.Body>
-            {error && <Alert variant="danger">{error}</Alert>}
-            
-            <p className="mb-4">
-              Upload a bacterial DNA sequence in FASTA format to analyze for antibiotic resistance genes.
-              The system will identify known resistance markers, primarily focusing on MRSA.
-            </p>
-            
-            <Form.Group className="mb-4">
-              <Form.Label>Detection Threshold (0-1)</Form.Label>
-              <Form.Range 
-                min={0.5}
-                max={0.95}
-                step={0.05}
-                value={threshold}
-                onChange={(e) => setThreshold(parseFloat(e.target.value))}
-              />
-              <div className="d-flex justify-content-between">
-                <small>0.5 (More sensitive)</small>
-                <small>Current: {threshold}</small>
-                <small>0.95 (More specific)</small>
-              </div>
-            </Form.Group>
-            
-            <FileUpload 
-              onFileUploaded={handleFileUpload}
-              acceptedFormats={['.fasta', '.fa', '.fna']}
-            />
-            
-            {loading && (
-              <div className="text-center my-4">
-                <Spinner animation="border" role="status" className="mb-2">
-                  <span className="visually-hidden">Loading...</span>
-                </Spinner>
-                <p>Analyzing sequence... This may take a few moments.</p>
-              </div>
-            )}
-          </Card.Body>
-        </Card>
-      ) : (
-        <div>
-          <AnalysisResult result={result} />
-          
-          <div className="d-flex gap-2 mt-4">
-            <Button variant="primary" onClick={handleSaveResult}>
-              Save to History
-            </Button>
-            <Button variant="outline-secondary" onClick={handleNewAnalysis}>
-              New Analysis
-            </Button>
-          </div>
-        </div>
-      )}
+    <Container className="py-5">
+      <Row className="justify-content-center">
+        <Col lg={result ? 10 : 8} xl={result ? 9 : 7}>
+          {!result ? (
+            <>
+              <h1 className="fw-bold text-center mb-4">Sequence Analysis</h1>
+              <Card className="shadow-lg">
+                <Card.Header as="h2" className="h5 py-3 text-center bg-primary text-white">
+                  Upload Sequence for Analysis
+                </Card.Header>
+                <Card.Body className="p-4 p-md-5">
+                  {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
+                  <p className="text-center text-muted mb-4">
+                    Upload a bacterial DNA sequence in FASTA format to identify resistance markers.
+                  </p>
+                  
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">Detection Threshold: <span className="fw-bold" style={{color: 'var(--primary-color)'}}>{threshold.toFixed(2)}</span></Form.Label>
+                    <Form.Range 
+                      min={0.5} max={0.95} step={0.05}
+                      value={threshold}
+                      onChange={(e) => setThreshold(parseFloat(e.target.value))}
+                      id="thresholdRange"
+                    />
+                  </Form.Group>
+                  
+                  <FileUpload 
+                    onFileUploaded={handleFileUpload}
+                    acceptedFormats={['.fasta', '.fa', '.fna']}
+                    disabled={loading}
+                  />
+                  
+                  {loading && (
+                    <div className="text-center mt-4">
+                      <Spinner animation="border" variant="primary" />
+                      <p className="text-muted mt-2">Analyzing... Please wait.</p>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            </>
+          ) : (
+            <>
+              <h1 className="fw-bold text-center mb-4">Analysis Complete</h1>
+              <Card className="shadow-lg">
+                <Card.Body className="p-4 p-md-5">
+                  <AnalysisResult result={result} />
+                  <hr className="my-4"/>
+                  <div className="d-flex justify-content-center gap-3">
+                    <Button variant="primary" size="lg" onClick={() => navigate('/history')}>
+                      View History
+                    </Button>
+                    <Button variant="outline-secondary" size="lg" onClick={handleNewAnalysis}>
+                      New Analysis
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
+            </>
+          )}
+        </Col>
+      </Row>
     </Container>
   );
 };

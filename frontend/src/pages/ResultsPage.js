@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Alert, Button, Spinner } from 'react-bootstrap';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Container, Alert, Button, Spinner, Card, Row, Col } from 'react-bootstrap';
+import { useParams, Link } from 'react-router-dom';
 import AnalysisResult from '../components/AnalysisResult';
 import { analysisService } from '../services/apiService';
 
 const ResultsPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-  
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,116 +14,77 @@ const ResultsPage = () => {
     const fetchResult = async () => {
       setLoading(true);
       setError(null);
-      
       try {
-        // First try to get from API
         const response = await analysisService.getAnalysisResult(id);
         setResult(response.data);
       } catch (err) {
-        console.log('Error fetching from API, trying local storage');
-        
-        // If API fails, try getting from local storage
         const savedResults = JSON.parse(localStorage.getItem('analysisResults') || '[]');
+        const foundResult = savedResults.find(item => String(item.id) === String(id) || String(item.savedAt) === String(id) || savedResults.indexOf(item).toString() === id);
         
-        // Check if the ID is a number (index in the array)
-        const resultIndex = parseInt(id);
-        if (!isNaN(resultIndex) && resultIndex >= 0 && resultIndex < savedResults.length) {
-          setResult(savedResults[resultIndex]);
+        if (foundResult) {
+          setResult(foundResult);
         } else {
-          // Try to find by ID if it's not an index
-          const foundResult = savedResults.find(item => item.id === id);
-          if (foundResult) {
-            setResult(foundResult);
-          } else {
-            setError('Could not find the requested analysis result.');
-          }
+          setError('Could not find the requested analysis result.');
         }
       } finally {
         setLoading(false);
       }
     };
-
     fetchResult();
   }, [id]);
 
   if (loading) {
     return (
-      <Container className="py-5 text-center">
-        <Spinner animation="border" role="status" className="mb-2">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-        <p>Loading analysis result...</p>
+      <Container className="text-center py-5">
+        <Spinner animation="border" variant="primary" style={{ width: '3rem', height: '3rem' }} />
+        <p className="mt-3 text-muted">Loading result...</p>
       </Container>
     );
   }
 
-  if (error) {
+  if (error || !result) {
     return (
-      <Container className="py-5">
-        <Alert variant="danger">
-          <Alert.Heading>Error</Alert.Heading>
-          <p>{error}</p>
-        </Alert>
-        <Button as={Link} to="/history" variant="primary">
-          Return to History
-        </Button>
-      </Container>
-    );
-  }
-
-  if (!result) {
-    return (
-      <Container className="py-5">
-        <Alert variant="warning">
-          <Alert.Heading>Result Not Found</Alert.Heading>
-          <p>The analysis result you are looking for could not be found.</p>
-        </Alert>
-        <Button as={Link} to="/history" variant="primary">
-          Return to History
-        </Button>
+      <Container className="text-center py-5">
+        <Card className="p-5 shadow-sm d-inline-block">
+          <Card.Body>
+             <h2 className="h3">Result Not Found</h2>
+             <p className="text-muted my-3">{error}</p>
+             <Button as={Link} to="/history" variant="primary">Return to History</Button>
+          </Card.Body>
+        </Card>
       </Container>
     );
   }
 
   return (
-    <Container className="py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Analysis Result</h1>
-        <div>
-          <Button 
-            variant="outline-primary" 
-            as={Link} 
-            to="/history"
-            className="me-2"
-          >
-            Back to History
-          </Button>
-          <Button 
-            variant="primary" 
-            as={Link} 
-            to="/analysis"
-          >
-            New Analysis
-          </Button>
-        </div>
-      </div>
-      
-      <AnalysisResult result={result} />
-      
-      <div className="mt-5">
-        <h3>Download Options</h3>
-        <div className="d-flex gap-2 mt-3">
-          <Button variant="outline-secondary">
-            Download Report (PDF)
-          </Button>
-          <Button variant="outline-secondary">
-            Export JSON
-          </Button>
-          <Button variant="outline-secondary">
-            Export CSV
-          </Button>
-        </div>
-      </div>
+    <Container className="py-5">
+      <Row className="justify-content-center">
+        <Col lg={10} xl={9}>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h1 className="fw-bold h2 mb-0">Analysis Result</h1>
+            <Button as={Link} to="/history" variant="outline-secondary">Back to History</Button>
+          </div>
+          
+          <Card className="shadow-sm mb-4">
+            <Card.Body className="p-4 p-md-5">
+              <AnalysisResult result={result} />
+            </Card.Body>
+          </Card>
+          
+          <Card className="shadow-sm">
+            <Card.Header as="h3" className="py-3 h5">Download Options</Card.Header>
+            <Card.Body className="p-4">
+              <p className="text-muted mb-3">
+                Export your analysis result in various formats.
+              </p>
+              <div className="d-flex gap-2">
+                <Button variant="outline-primary">Download PDF</Button>
+                <Button variant="outline-primary">Export JSON</Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </Container>
   );
 };

@@ -1,28 +1,27 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Container, Spinner } from 'react-bootstrap';
 
-// Component to protect routes that require authentication
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
-  // Show loading state while checking authentication
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '50vh' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <Container 
+        className="d-flex flex-column justify-content-center align-items-center text-center" 
+        style={{ minHeight: 'calc(100vh - 200px)' }}
+      >
+        <Spinner animation="border" variant="primary" style={{ width: '3rem', height: '3rem' }} />
+        <p className="mt-3 lead text-muted">Authenticating...</p>
+      </Container>
     );
   }
 
-  // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
   }
 
-  // Render the protected component if authenticated
   return children;
 };
 

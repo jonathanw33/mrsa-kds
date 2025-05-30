@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Badge, Button, Alert, Card } from 'react-bootstrap';
+import { Container, Table, Badge, Button, Alert, Card, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { analysisService } from '../services/apiService';
 
@@ -8,145 +8,103 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Format date string
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
-
-  // Get badge variant based on resistance status
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'resistant':
-        return 'danger';
-      case 'susceptible':
-        return 'success';
-      case 'intermediate':
-        return 'warning';
-      default:
-        return 'secondary';
-    }
+    if (!dateString) return 'N/A';
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleString('en-US', options);
   };
 
   useEffect(() => {
     const fetchHistory = async () => {
       setLoading(true);
-      
+      setError(null);
       try {
-        // First try to get history from the API
         const response = await analysisService.getAnalysisHistory();
-        setHistory(response.data);
+        setHistory(response.data || []);
       } catch (err) {
-        console.log('Error fetching from API, using local storage instead');
-        
-        // Fall back to local storage if API fails
         const savedResults = JSON.parse(localStorage.getItem('analysisResults') || '[]');
         setHistory(savedResults);
-        
-        if (err.response?.status !== 404) {
-          // Show error only if it's not a 404 (empty history)
-          setError('Could not fetch analysis history from server.');
+        if (savedResults.length > 0) {
+          setError('Could not fetch history from server. Displaying locally saved data.');
         }
       } finally {
         setLoading(false);
       }
     };
-
     fetchHistory();
   }, []);
 
-  // Handle delete analysis (local storage only for demo)
   const handleDelete = (index) => {
-    const updatedHistory = [...history];
-    updatedHistory.splice(index, 1);
+    const updatedHistory = history.filter((_, i) => i !== index);
     setHistory(updatedHistory);
     localStorage.setItem('analysisResults', JSON.stringify(updatedHistory));
+  };
+  
+  const getStatusBadge = (status) => {
+    const s = status?.toLowerCase();
+    if (s === 'resistant') return 'danger';
+    if (s === 'susceptible') return 'success';
+    return 'secondary';
   };
 
   if (loading) {
     return (
-      <Container className="py-5 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-2">Loading analysis history...</p>
+      <Container className="text-center py-5">
+        <Spinner animation="border" variant="primary" style={{ width: '3rem', height: '3rem' }} />
+        <p className="mt-3 text-muted">Loading analysis history...</p>
       </Container>
     );
   }
 
   return (
-    <Container className="py-4">
-      <h1 className="mb-4">Analysis History</h1>
-      
-      {error && <Alert variant="warning">{error}</Alert>}
+    <Container className="py-5">
+      <h1 className="mb-5 fw-bold text-center">Analysis History</h1>
+      {error && <Alert variant="warning" className="shadow-sm">{error}</Alert>}
       
       {history.length === 0 ? (
-        <Card className="text-center p-5">
+        <Card className="text-center p-5 shadow-sm">
           <Card.Body>
-            <h3>No Analysis History</h3>
-            <p className="mb-4">You haven't performed any sequence analyses yet.</p>
-            <Button as={Link} to="/analysis" variant="primary">
+            <h2 className="h3 mb-3">No History Found</h2>
+            <p className="text-muted mb-4">You haven't performed any analyses yet.</p>
+            <Button as={Link} to="/analysis" variant="primary" size="lg">
               Start Your First Analysis
             </Button>
           </Card.Body>
         </Card>
       ) : (
-        <div>
-          <p className="mb-4">View your previous sequence analyses and their results.</p>
-          
-          <Table responsive hover className="align-middle">
-            <thead className="bg-light">
-              <tr>
-                <th>Date</th>
-                <th>Sample ID</th>
-                <th>Status</th>
-                <th>Confidence</th>
-                <th>Identified Genes</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((item, index) => (
-                <tr key={index}>
-                  <td>{formatDate(item.analysis_timestamp || item.savedAt)}</td>
-                  <td>{item.sample_id}</td>
-                  <td>
-                    <Badge bg={getStatusBadge(item.resistance_status)}>
-                      {item.resistance_status.charAt(0).toUpperCase() + item.resistance_status.slice(1)}
-                    </Badge>
-                  </td>
-                  <td>{item.confidence_score.toFixed(1)}%</td>
-                  <td>
-                    {item.identified_genes && item.identified_genes.length > 0 ? (
-                      <span>{item.identified_genes.join(', ')}</span>
-                    ) : (
-                      <span className="text-muted">None</span>
-                    )}
-                  </td>
-                  <td>
-                    <div className="d-flex gap-2">
-                      <Button 
-                        as={Link} 
-                        to={`/results/${item.id || index}`}
-                        variant="outline-primary"
-                        size="sm"
-                      >
-                        View
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleDelete(index)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </td>
+        <Card className="shadow-sm">
+          <div className="table-responsive">
+            <Table hover className="align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Sample ID</th>
+                  <th>Status</th>
+                  <th>Confidence</th>
+                  <th className="text-center">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+              </thead>
+              <tbody>
+                {history.map((item, index) => (
+                  <tr key={item.id || item.savedAt || index}>
+                    <td>{formatDate(item.analysis_timestamp || item.savedAt)}</td>
+                    <td className="text-truncate" style={{ maxWidth: '150px' }}>{item.sample_id || 'N/A'}</td>
+                    <td>
+                      <Badge pill bg={getStatusBadge(item.resistance_status)}>
+                        {item.resistance_status || 'N/A'}
+                      </Badge>
+                    </td>
+                    <td>{item.confidence_score ? `${item.confidence_score.toFixed(1)}%` : 'N/A'}</td>
+                    <td className="text-center">
+                        <Button as={Link} to={`/results/${item.id || item.savedAt || index}`} variant="outline-primary" size="sm" className="me-2">View</Button>
+                        <Button variant="outline-danger" size="sm" onClick={() => handleDelete(index)}>Delete</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </Card>
       )}
     </Container>
   );

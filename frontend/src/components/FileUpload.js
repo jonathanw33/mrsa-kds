@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Form, Button, Alert, ProgressBar } from 'react-bootstrap';
+import { Form, Button, Alert, ProgressBar } from 'react-bootstrap'; // Form tidak digunakan secara langsung, tapi mungkin untuk styling internal Dropzone
 import { useDropzone } from 'react-dropzone';
 
 const FileUpload = ({ onFileUploaded, maxSize = 10485760, acceptedFormats = ['.fasta', '.fa', '.fna'] }) => {
@@ -8,64 +8,65 @@ const FileUpload = ({ onFileUploaded, maxSize = 10485760, acceptedFormats = ['.f
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const onDrop = useCallback((acceptedFiles) => {
-    setError(null);
+  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+    setError(null); setFile(null);
     
-    // Check if file exists
+    if (rejectedFiles?.length > 0) {
+      const firstError = rejectedFiles[0].errors[0];
+      if (firstError.code === 'file-too-large') {
+        setError(`File is too large. Maximum size is ${maxSize / 1024 / 1024} MB.`);
+      } else if (firstError.code === 'file-invalid-type') {
+        setError(`Invalid file type. Accepted formats: ${acceptedFormats.join(', ')}`);
+      } else {
+        setError(firstError.message || 'File not accepted.');
+      }
+      return;
+    }
+
     if (acceptedFiles?.length > 0) {
-      const selectedFile = acceptedFiles[0];
-      
-      // Check file size
-      if (selectedFile.size > maxSize) {
-        setError(`File size exceeds the maximum allowed size (${maxSize / 1024 / 1024} MB)`);
-        return;
-      }
-      
-      // Check file extension
-      const fileExt = '.' + selectedFile.name.split('.').pop().toLowerCase();
-      if (!acceptedFormats.includes(fileExt)) {
-        setError(`Only ${acceptedFormats.join(', ')} files are accepted`);
-        return;
-      }
-      
-      // Set the file
-      setFile(selectedFile);
+      setFile(acceptedFiles[0]);
     }
   }, [maxSize, acceptedFormats]);
   
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  // Membuat objek 'accept' untuk useDropzone
+  const dropzoneAcceptOptions = acceptedFormats.reduce((acc, format) => {
+    // Asumsi format adalah ekstensi file seperti '.fasta'
+    // Tipe MIME untuk FASTA bisa bervariasi, jadi menggunakan ekstensi lebih aman untuk kasus ini
+    // Jika Anda tahu tipe MIME spesifik, Anda bisa menambahkannya di sini
+    // Contoh: 'text/plain', 'application/x-fasta', dll.
+    // Untuk kesederhanaan, Dropzone akan mencocokkan berdasarkan ekstensi jika ini formatnya
+    acc[format.startsWith('.') ? format : `.${format}`] = []; 
+    return acc;
+  }, {});
+
+
+  const { getRootProps, getInputProps, isDragActive, isFocused } = useDropzone({
     onDrop,
     maxFiles: 1,
     multiple: false,
+    accept: dropzoneAcceptOptions, 
+    maxSize: maxSize,
   });
 
   const handleUpload = async () => {
-    if (!file) {
-      setError('Please select a file first');
-      return;
-    }
+    if (!file) { setError('Please select a file first.'); return; }
+    setUploading(true); setUploadProgress(0); setError(null);
     
-    setUploading(true);
-    setUploadProgress(0);
-    
-    // Simulate upload progress
+    let currentProgress = 0;
     const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        const newProgress = prev + 5;
-        if (newProgress >= 95) {
-          clearInterval(progressInterval);
-          return 95;
-        }
-        return newProgress;
-      });
-    }, 100);
+      currentProgress += 10;
+      if (currentProgress <= 95) {
+        setUploadProgress(currentProgress);
+      } else {
+        clearInterval(progressInterval);
+      }
+    }, 150);
     
     try {
-      // Call the onFileUploaded callback with the file
       await onFileUploaded(file);
       setUploadProgress(100);
-    } catch (error) {
-      setError('Error uploading file: ' + error.message);
+    } catch (uploadError) {
+      setError(`Upload failed: ${uploadError.message || 'Please try again.'}`);
       setUploadProgress(0);
     } finally {
       clearInterval(progressInterval);
@@ -74,30 +75,26 @@ const FileUpload = ({ onFileUploaded, maxSize = 10485760, acceptedFormats = ['.f
   };
 
   const handleClear = () => {
-    setFile(null);
-    setError(null);
-    setUploadProgress(0);
+    setFile(null); setError(null); setUploadProgress(0);
   };
 
+  const dropzoneClassName = `p-4 p-md-5 border rounded text-center ${
+    isDragActive || isFocused ? 'border-primary shadow-sm' : 'border-dashed'
+  }`;
+
   return (
-    <div className="mb-4">
-      {error && <Alert variant="danger">{error}</Alert>}
+    <div className="mb-3">
+      {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
       
-      <div
-        {...getRootProps()}
-        className={`p-5 border rounded text-center ${
-          isDragActive ? 'bg-light border-primary' : 'border-dashed'
-        }`}
-        style={{ cursor: 'pointer', borderStyle: isDragActive ? 'solid' : 'dashed' }}
-      >
+      <div {...getRootProps()} className={dropzoneClassName} style={{ cursor: 'pointer', minHeight: '150px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <input {...getInputProps()} />
         {isDragActive ? (
-          <p className="mb-0">Drop the file here...</p>
+          <p className="mb-0 h5 text-primary">Drop the file here ...</p>
         ) : (
           <div>
-            <p className="mb-2">Drag and drop a FASTA file here, or click to select a file</p>
+            <p className="mb-1 fw-semibold">Drag & drop a FASTA file, or click to select</p>
             <p className="text-muted small mb-0">
-              Accepted formats: {acceptedFormats.join(', ')} | Max size: {maxSize / 1024 / 1024} MB
+              Formats: {acceptedFormats.join(', ')} | Max size: {maxSize / 1024 / 1024} MB
             </p>
           </div>
         )}
@@ -105,32 +102,28 @@ const FileUpload = ({ onFileUploaded, maxSize = 10485760, acceptedFormats = ['.f
       
       {file && (
         <div className="mt-3">
-          <p className="mb-2">
-            <strong>Selected file:</strong> {file.name} ({(file.size / 1024).toFixed(1)} KB)
-          </p>
-          
-          {uploadProgress > 0 && (
-            <ProgressBar 
-              now={uploadProgress} 
-              label={`${uploadProgress}%`} 
-              className="mb-3" 
-            />
+          {!uploading && uploadProgress !== 100 && (
+            <Alert variant="info" className="py-2 px-3 d-flex justify-content-between align-items-center">
+              <span><strong>Selected:</strong> {file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
+            </Alert>
+          )}
+
+          {uploading && (
+              <ProgressBar 
+                now={uploadProgress} 
+                label={`${uploadProgress}%`} 
+                className="my-3"
+                animated={uploadProgress < 100}
+                variant={uploadProgress === 100 ? "success" : "primary"}
+              />
           )}
           
           <div className="d-flex gap-2">
-            <Button 
-              variant="primary" 
-              onClick={handleUpload} 
-              disabled={uploading}
-            >
-              {uploading ? 'Uploading...' : 'Upload'}
+            <Button variant="primary" onClick={handleUpload} disabled={uploading || uploadProgress === 100}>
+              {uploading ? 'Uploading...' : (uploadProgress === 100 ? 'Uploaded' : 'Start Analysis')}
             </Button>
-            <Button 
-              variant="outline-secondary" 
-              onClick={handleClear}
-              disabled={uploading}
-            >
-              Clear
+            <Button variant="outline-secondary" onClick={handleClear} disabled={uploading}>
+              Clear Selection
             </Button>
           </div>
         </div>
