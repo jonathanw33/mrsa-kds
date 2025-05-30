@@ -15,90 +15,87 @@ const AnalysisPage = () => {
   const handleFileUpload = async (file) => {
     setLoading(true);
     setError(null);
+    setResult(null); // Clear previous results
     try {
       const response = await analysisService.analyzeSequence(file, threshold);
       setResult(response.data);
+      // Simpan ke local storage
       const savedResults = JSON.parse(localStorage.getItem('analysisResults') || '[]');
       const resultWithTimestamp = { ...response.data, savedAt: new Date().toISOString() };
       savedResults.unshift(resultWithTimestamp);
-      const trimmedResults = savedResults.slice(0, 10);
-      localStorage.setItem('analysisResults', JSON.stringify(trimmedResults));
+      localStorage.setItem('analysisResults', JSON.stringify(savedResults.slice(0, 10)));
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error analyzing sequence');
+      setError(err.response?.data?.detail || 'An error occurred during analysis.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSaveResult = () => navigate('/history');
-  const handleNewAnalysis = () => { setResult(null); setError(null); };
+  const handleNewAnalysis = () => {
+    setResult(null);
+    setError(null);
+  };
 
   return (
-    <Container className="py-4">
+    <Container className="py-5">
       <Row className="justify-content-center">
-        <Col lg={result ? 10 : 8}> {/* Kolom lebih lebar jika hasil ditampilkan */}
-          <h1 className="mb-4 text-center fw-bold">Sequence Analysis</h1>
-          
+        <Col lg={result ? 10 : 8} xl={result ? 9 : 7}>
           {!result ? (
-            <Card> {/* Card akan otomatis mendapat style dari index.css */}
-              <Card.Header as="h5" className="py-3 fw-semibold"> {/* fw-semibold untuk header */}
-                Upload Sequence for Analysis
-              </Card.Header>
-              <Card.Body className="p-4">
-                {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
-                
-                <p className="mb-4 text-muted">
-                  Upload a bacterial DNA sequence in FASTA format. The system will identify known resistance markers, primarily focusing on MRSA.
-                </p>
-                
-                <Form.Group className="mb-4">
-                  <Form.Label className="fw-semibold">Detection Threshold: <span className="text-primary fw-bold">{threshold.toFixed(2)}</span></Form.Label>
-                  <Form.Range 
-                    min={0.5} max={0.95} step={0.05}
-                    value={threshold}
-                    onChange={(e) => setThreshold(parseFloat(e.target.value))}
-                    id="thresholdRange"
-                  />
-                  <div className="d-flex justify-content-between text-muted small mt-1">
-                    <span>0.5 (More sensitive)</span>
-                    <span>0.95 (More specific)</span>
-                  </div>
-                </Form.Group>
-                
-                {/* FileUpload component akan berada di dalam Card.Body */}
-                <div className="p-3 border rounded bg-light mb-3"> {/* bg-light agar sedikit beda */}
+            <>
+              <h1 className="fw-bold text-center mb-4">Sequence Analysis</h1>
+              <Card className="shadow-lg">
+                <Card.Header as="h2" className="h5 py-3 text-center bg-primary text-white">
+                  Upload Sequence for Analysis
+                </Card.Header>
+                <Card.Body className="p-4 p-md-5">
+                  {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
+                  <p className="text-center text-muted mb-4">
+                    Upload a bacterial DNA sequence in FASTA format to identify resistance markers.
+                  </p>
+                  
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">Detection Threshold: <span className="fw-bold" style={{color: 'var(--primary-color)'}}>{threshold.toFixed(2)}</span></Form.Label>
+                    <Form.Range 
+                      min={0.5} max={0.95} step={0.05}
+                      value={threshold}
+                      onChange={(e) => setThreshold(parseFloat(e.target.value))}
+                      id="thresholdRange"
+                    />
+                  </Form.Group>
+                  
                   <FileUpload 
                     onFileUploaded={handleFileUpload}
                     acceptedFormats={['.fasta', '.fa', '.fna']}
+                    disabled={loading}
                   />
-                </div>
-                
-                {loading && (
-                  <div className="text-center my-4">
-                    <Spinner animation="border" variant="primary" role="status" className="mb-2">
-                      <span className="visually-hidden">Loading...</span>
-                    </Spinner>
-                    <p className="text-muted">Analyzing sequence... This may take a few moments.</p>
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
+                  
+                  {loading && (
+                    <div className="text-center mt-4">
+                      <Spinner animation="border" variant="primary" />
+                      <p className="text-muted mt-2">Analyzing... Please wait.</p>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            </>
           ) : (
-            <Card> {/* Hasil juga dibungkus card */}
-              <Card.Header as="h5" className="py-3 fw-semibold">Analysis Complete</Card.Header>
-              <Card.Body className="p-4">
-                <AnalysisResult result={result} />
-                <hr className="my-4"/> {/* Pemisah sebelum tombol aksi */}
-                <div className="d-flex justify-content-center gap-2">
-                  <Button variant="primary" onClick={handleSaveResult} className="px-4">
-                    Save to History
-                  </Button>
-                  <Button variant="outline-secondary" onClick={handleNewAnalysis} className="px-4">
-                    New Analysis
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
+            <>
+              <h1 className="fw-bold text-center mb-4">Analysis Complete</h1>
+              <Card className="shadow-lg">
+                <Card.Body className="p-4 p-md-5">
+                  <AnalysisResult result={result} />
+                  <hr className="my-4"/>
+                  <div className="d-flex justify-content-center gap-3">
+                    <Button variant="primary" size="lg" onClick={() => navigate('/history')}>
+                      View History
+                    </Button>
+                    <Button variant="outline-secondary" size="lg" onClick={handleNewAnalysis}>
+                      New Analysis
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
+            </>
           )}
         </Col>
       </Row>

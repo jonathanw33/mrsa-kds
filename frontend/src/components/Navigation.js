@@ -13,7 +13,7 @@ const Navigation = () => {
   };
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" sticky="top" className="shadow-sm">
+    <Navbar variant="dark" expand="lg" sticky="top" className="shadow-sm custom-navbar" style={{ backgroundColor: '#1a1f3a' }}>
       <Container fluid="lg">
         <Navbar.Brand as={Link} to="/" className="fw-bold">
           <img

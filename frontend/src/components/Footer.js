@@ -17,14 +17,8 @@ const Footer = () => {
             </p>
           </Col>
 
-          {/* Kolom Quick Links */}
-          {/* PERUBAHAN: Ditambahkan className="text-center text-lg-start" */}
-          {/* text-center untuk semua ukuran, text-lg-start agar di layar besar (lg) kembali rata kiri jika diinginkan */}
-          {/* Jika Anda ingin selalu rata tengah, cukup gunakan "text-center" */}
           <Col xs={12} sm={6} md={6} lg={4} className="text-center"> 
             <h5 className="text-white mb-3">Quick Links</h5>
-            {/* PERUBAHAN: Jika ingin ul juga ikut tengah, bisa tambahkan d-inline-block atau styling custom */}
-            {/* Namun, biasanya ul tetap rata kiri di dalam kolom yang text-center untuk itemnya */}
             <ul className="list-unstyled">
               <li className="mb-2">
                 {/* Kelas footer-link akan diatur di CSS untuk garis bawah */}
