@@ -4,6 +4,7 @@ import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 // HANYA MENGGUNAKAN LIBRARY REACT-ROUTER-DOM
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ModernHero from '../components/ModernHero';
 // TIDAK ADA LAGI IMPORT REACT-BOOTSTRAP-ICONS
 
 const HomePage = () => {
@@ -33,39 +34,8 @@ const HomePage = () => {
 
   return (
     <div className="home-page">
-      {/* Hero Section */}
-      <div className="hero-section text-white text-center mb-5">
-        <Container>
-          <Row className="justify-content-center align-items-center">
-            <Col lg={8}>
-              <h1 className="display-3 fw-bold mb-4 text-white">Unlock the Secrets of MRSA Resistance</h1>
-              <p className="lead fs-4 mb-5">
-                Analyze DNA sequences to identify antibiotic resistance genes. Empower your research with fast, accurate, and actionable insights.
-              </p>
-              {isAuthenticated ? (
-                <Button as={Link} to="/analysis" variant="light" size="lg" className="me-2">
-                  Start New Analysis
-                </Button>
-              ) : (
-                <Button as={Link} to="/register" variant="light" size="lg" className="me-2">
-                  Get Started Free
-                </Button>
-              )}
-              <Button as={Link} to="/about" variant="outline-light" size="lg">
-                Learn More
-              </Button>
-            </Col>
-            <Col lg={10} className="mt-5">
-               <img
-                src="/images/mrsa-illustration.svg" 
-                alt="MRSA Bacteria Illustration"
-                className="img-fluid"
-                style={{ maxHeight: '320px' }} 
-              />
-            </Col>
-          </Row>
-        </Container>
-      </div>
+      {/* Modern Hero Section */}
+      <ModernHero />
 
       {/* Features Section - Menggunakan Angka sebagai pengganti ikon */}
       <Container className="py-5">

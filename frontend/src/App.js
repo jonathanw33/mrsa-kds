@@ -4,7 +4,7 @@ import { Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Components
-import Navigation from './components/Navigation';
+import ModernNavigation from './components/ModernNavigation';
 import Footer from './components/Footer';
 
 // Pages
@@ -26,7 +26,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="d-flex flex-column min-vh-100">
-          <Navigation />
+          <ModernNavigation />
           <Container className="flex-grow-1 py-4">
             <Routes>
               <Route path="/" element={<HomePage />} />

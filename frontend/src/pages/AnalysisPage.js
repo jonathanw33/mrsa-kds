@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Card, Form, Alert, Button, Spinner, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import FileUpload from '../components/FileUpload'; 
-import AnalysisResult from '../components/AnalysisResult'; 
+import ModernFileUpload from '../components/ModernFileUpload'; 
+import ModernAnalysisResult from '../components/ModernAnalysisResult'; 
 import { analysisService } from '../services/apiService';
 
 const AnalysisPage = () => {
@@ -63,7 +63,7 @@ const AnalysisPage = () => {
                     />
                   </Form.Group>
                   
-                  <FileUpload 
+                  <ModernFileUpload 
                     onFileUploaded={handleFileUpload}
                     acceptedFormats={['.fasta', '.fa', '.fna']}
                     disabled={loading}
@@ -83,7 +83,7 @@ const AnalysisPage = () => {
               <h1 className="fw-bold text-center mb-4">Analysis Complete</h1>
               <Card className="shadow-lg">
                 <Card.Body className="p-4 p-md-5">
-                  <AnalysisResult result={result} />
+                  <ModernAnalysisResult result={result} />
                   <hr className="my-4"/>
                   <div className="d-flex justify-content-center gap-3">
                     <Button variant="primary" size="lg" onClick={() => navigate('/history')}>

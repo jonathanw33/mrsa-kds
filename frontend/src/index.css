@@ -1,6 +1,9 @@
 /* --- Import Google Fonts --- */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+/* --- Import Modern Enhancements --- */
+@import './styles/modern-enhancements.css';
+
 /* --- CSS Variables for Easy Theme Management (TEMA BIRU-UNGU) --- */
 :root {
   --primary-color: #6a11cb;   /* Warna utama: Ungu */
