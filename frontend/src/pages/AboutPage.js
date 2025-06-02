@@ -32,7 +32,7 @@ const AboutPage = () => {
             </Col>
             <Col lg={5} className="text-center">
               <img 
-                src="/images/mrsa-microscope.jpg" 
+                src="/images/MRSA_microscope.jpg" 
                 alt="MRSA under microscope" 
                 className="img-fluid rounded-3 shadow"
                 style={{maxHeight: '300px'}}
@@ -121,3 +121,4 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+

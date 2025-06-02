@@ -14,8 +14,9 @@ const ModernHero = () => {
         <div className="gradient-orb orb-3"></div>
       </div>
       
-      <Container className="hero-content">
-        <Row className="justify-content-center align-items-center min-vh-80">
+      <Container fluid className="hero-content">
+        {/* Baris ini sekarang tidak lagi memiliki min-vh-100 */}
+        <Row className="justify-content-center align-items-center"> 
           <Col lg={8} xl={7} className="text-center">
             <div className="hero-badge mb-4">
               <div className="badge-content">
@@ -116,83 +117,27 @@ const ModernHero = () => {
           </Col>
         </Row>
         
-        <Row className="justify-content-center mt-5">
-          <Col lg={10} xl={8} className="text-center">
-            <div className="hero-image-container">
-              <div className="hero-image-bg"></div>
-              <svg 
-                width="100%" 
-                height="300" 
-                viewBox="0 0 800 300" 
-                className="hero-illustration"
-              >
-                {/* DNA Helix */}
-                <defs>
-                  <linearGradient id="dnaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="var(--primary-color, #6a11cb)" />
-                    <stop offset="100%" stopColor="var(--secondary-color, #2575fc)" />
-                  </linearGradient>
-                </defs>
-                
-                {/* DNA Strands */}
-                <path 
-                  d="M100 150 Q200 100 300 150 T500 150 T700 150" 
-                  stroke="url(#dnaGradient)" 
-                  strokeWidth="4" 
-                  fill="none"
-                  className="dna-strand"
-                />
-                <path 
-                  d="M100 150 Q200 200 300 150 T500 150 T700 150" 
-                  stroke="url(#dnaGradient)" 
-                  strokeWidth="4" 
-                  fill="none"
-                  className="dna-strand"
-                />
-                
-                {/* Connection lines */}
-                {[150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650].map((x, i) => (
-                  <line 
-                    key={i}
-                    x1={x} 
-                    y1={150 + Math.sin(x * 0.02) * 50} 
-                    x2={x} 
-                    y2={150 - Math.sin(x * 0.02) * 50}
-                    stroke="url(#dnaGradient)"
-                    strokeWidth="2"
-                    opacity="0.6"
-                    className="dna-connection"
-                  />
-                ))}
-                
-                {/* Floating particles */}
-                <circle cx="150" cy="80" r="3" fill="var(--primary-color, #6a11cb)" opacity="0.7" className="particle">
-                  <animate attributeName="cy" values="80;90;80" dur="3s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="300" cy="220" r="2" fill="var(--secondary-color, #2575fc)" opacity="0.5" className="particle">
-                  <animate attributeName="cy" values="220;210;220" dur="2s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="500" cy="60" r="2.5" fill="var(--primary-color, #6a11cb)" opacity="0.6" className="particle">
-                  <animate attributeName="cy" values="60;70;60" dur="2.5s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="650" cy="240" r="2" fill="var(--secondary-color, #2575fc)" opacity="0.8" className="particle">
-                  <animate attributeName="cy" values="240;230;240" dur="3.5s" repeatCount="indefinite"/>
-                </circle>
-              </svg>
-            </div>
-          </Col>
-        </Row>
+        {/* Bagian Row untuk hero-image-container DIHAPUS dari sini */}
+        {/* Jika Anda ingin menampilkannya di bawah, render di luar komponen ModernHero */}
+
       </Container>
       
       <style jsx>{`
         .modern-hero {
           position: relative;
-          min-height: 90vh;
+          margin-left: calc(-50vw + 50%); 
+          margin-right: calc(-50vw + 50%); 
+          margin-top: calc(-47vw + 50%);
+          width: 100vw; 
+          padding-top: 6rem; 
+          padding-bottom: 5rem; 
+
           background: linear-gradient(135deg, var(--primary-color, #6a11cb) 0%, var(--secondary-color, #2575fc) 100%);
           color: white;
-          overflow: hidden;
+          overflow: hidden; 
           display: flex;
           align-items: center;
+          border-radius: 15px; 
         }
         
         .hero-background {
@@ -244,11 +189,15 @@ const ModernHero = () => {
         .hero-content {
           position: relative;
           z-index: 10;
+          width: 100%;
         }
         
-        .min-vh-80 {
-          min-height: 80vh;
-        }
+        /* CSS untuk .min-vh-100 tidak lagi relevan untuk row utama hero, */
+        /* tapi bisa dipertahankan jika digunakan di tempat lain. */
+        /* Untuk row utama, kita sudah hapus kelas .min-vh-100 */
+        .min-vh-100 { 
+          min-height: 90vh; 
+        } 
         
         .hero-badge {
           display: inline-block;
@@ -269,7 +218,7 @@ const ModernHero = () => {
         }
         
         .hero-title {
-          font-size: 3.5rem;
+          font-size: 4rem;
           font-weight: 800;
           line-height: 1.1;
           margin-bottom: 1.5rem;
@@ -277,7 +226,7 @@ const ModernHero = () => {
         
         @media (max-width: 768px) {
           .hero-title {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
           }
         }
         
@@ -289,11 +238,12 @@ const ModernHero = () => {
         }
         
         .hero-subtitle {
-          font-size: 1.25rem;
+          font-size: 1.35rem;
           line-height: 1.6;
           opacity: 0.9;
-          max-width: 600px;
-          margin: 0 auto;
+          max-width: 700px;
+          margin: 0 auto; /* Sudah ada, bagus untuk centering */
+          margin-bottom: 2.5rem !important; /* pastikan ada margin bawah sebelum features */
         }
         
         .hero-features {
@@ -301,6 +251,7 @@ const ModernHero = () => {
           justify-content: center;
           flex-wrap: wrap;
           gap: 1rem;
+          margin-bottom: 2.5rem !important; /* pastikan ada margin bawah sebelum actions */
         }
         
         .feature-pill {
@@ -309,10 +260,10 @@ const ModernHero = () => {
           gap: 0.5rem;
           background: rgba(255, 255, 255, 0.1);
           backdrop-filter: blur(10px);
-          padding: 0.5rem 1rem;
+          padding: 0.6rem 1.2rem;
           border-radius: 25px;
           border: 1px solid rgba(255, 255, 255, 0.2);
-          font-size: 0.9rem;
+          font-size: 1rem;
           font-weight: 500;
         }
         
@@ -328,10 +279,11 @@ const ModernHero = () => {
           border: 1px solid rgba(255, 255, 255, 0.3);
           color: white;
           font-weight: 600;
-          padding: 0.75rem 2rem;
+          padding: 0.9rem 2.5rem;
           border-radius: 50px;
           transition: all 0.3s ease;
           backdrop-filter: blur(10px);
+          font-size: 1.1rem;
         }
         
         .btn-gradient:hover {
@@ -347,9 +299,10 @@ const ModernHero = () => {
           border: 2px solid rgba(255, 255, 255, 0.3);
           color: white;
           font-weight: 600;
-          padding: 0.75rem 2rem;
+          padding: 0.9rem 2.5rem;
           border-radius: 50px;
           transition: all 0.3s ease;
+          font-size: 1.1rem;
         }
         
         .btn-outline-modern:hover {
@@ -358,47 +311,11 @@ const ModernHero = () => {
           color: white;
           transform: translateY(-2px);
         }
+
+        /* CSS untuk hero-image-container, hero-image-bg, hero-illustration, dll. */
+        /* tidak lagi relevan di dalam komponen ini jika SVG sudah dihapus. */
+        /* Jika Anda memindahkannya ke luar, styling tersebut harus ikut. */
         
-        .hero-image-container {
-          position: relative;
-          margin-top: 3rem;
-        }
-        
-        .hero-image-bg {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 300px;
-          height: 200px;
-          background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-          border-radius: 50%;
-          filter: blur(20px);
-        }
-        
-        .hero-illustration {
-          position: relative;
-          z-index: 2;
-          filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.1));
-        }
-        
-        .dna-strand {
-          animation: pulse 2s ease-in-out infinite alternate;
-        }
-        
-        .dna-connection {
-          animation: glow 3s ease-in-out infinite alternate;
-        }
-        
-        @keyframes pulse {
-          0% { opacity: 0.7; }
-          100% { opacity: 1; }
-        }
-        
-        @keyframes glow {
-          0% { opacity: 0.3; }
-          100% { opacity: 0.8; }
-        }
       `}</style>
     </section>
   );

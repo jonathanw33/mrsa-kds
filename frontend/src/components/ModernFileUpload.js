@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Form, Button, Alert, ProgressBar, Card } from 'react-bootstrap';
+import { Button, Alert, ProgressBar, Card } from 'react-bootstrap';
 import { useDropzone } from 'react-dropzone';
 
 const ModernFileUpload = ({ onFileUploaded, maxSize = 10485760, acceptedFormats = ['.fasta', '.fa', '.fna'] }) => {

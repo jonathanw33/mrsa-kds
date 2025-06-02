@@ -63,7 +63,7 @@ const HomePage = () => {
           <Row className="align-items-center">
             <Col lg={5} className="mb-4 mb-lg-0 text-center">
               <img
-                src="/images/analysis-workflow.svg"
+                src="/images/visual_analysis.png"
                 alt="Analysis Workflow"
                 className="img-fluid"
                 style={{ maxHeight: '400px' }}

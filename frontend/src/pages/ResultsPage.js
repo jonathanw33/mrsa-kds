@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Alert, Button, Spinner, Card, Row, Col } from 'react-bootstrap';
+import { Container, Button, Spinner, Card, Row, Col } from 'react-bootstrap';
 import { useParams, Link } from 'react-router-dom';
 import AnalysisResult from '../components/AnalysisResult';
 import { analysisService } from '../services/apiService';
