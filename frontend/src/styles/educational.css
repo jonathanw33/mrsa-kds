@@ -1,0 +1,218 @@
+/* Educational Components Styles */
+
+/* Educational Tooltip */
+.educational-tooltip {
+  max-width: 300px;
+  font-size: 0.9rem;
+}
+
+.educational-term {
+  transition: all 0.2s ease;
+}
+
+.educational-term:hover {
+  color: #0056b3 !important;
+  border-bottom-color: #0056b3 !important;
+}
+
+/* Analysis Progress */
+.analysis-progress-card {
+  border: 2px solid #e3f2fd;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+}
+
+.step-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.step-indicator.active {
+  background: #e3f2fd;
+  border-left: 4px solid #007bff;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  background: #dee2e6;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.step-indicator.active .step-circle {
+  background: #007bff;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.step-indicator.active .step-circle:contains('✓') {
+  background: #28a745;
+  animation: none;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.step-label {
+  flex: 1;
+}
+
+.analysis-log {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.log-container {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+.log-entry {
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.log-entry.success {
+  color: #28a745;
+}
+
+.log-entry.info {
+  color: #007bff;
+}
+
+.log-time {
+  color: #6c757d;
+  margin-right: 0.5rem;
+}
+
+.log-description {
+  margin-left: 6rem;
+  font-style: italic;
+}
+
+/* How It Works Modal */
+.process-step-card {
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.process-step-card:hover {
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.step-number-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  background: #007bff;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.step-details {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+/* Analysis Details */
+.analysis-details-card {
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.analysis-details-card .card-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 2px solid #dee2e6;
+}
+
+.explanation-content ul li {
+  margin-bottom: 0.25rem;
+}
+
+.table th code, .table td code {
+  background: #f8f9fa;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .step-indicators {
+    gap: 0.75rem;
+  }
+  
+  .step-indicator {
+    padding: 0.5rem;
+  }
+  
+  .step-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+  
+  .log-description {
+    margin-left: 4rem;
+  }
+  
+  .process-step-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Upload page enhancements */
+.upload-with-education {
+  position: relative;
+}
+
+.how-it-works-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}
+
+/* Results page enhancements */
+.results-with-education .card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.results-with-education .educational-term {
+  font-weight: normal;
+}

@@ -4,6 +4,9 @@
 /* --- Import Modern Enhancements --- */
 @import './styles/modern-enhancements.css';
 
+/* --- Import Educational Components --- */
+@import './styles/educational.css';
+
 /* --- CSS Variables for Easy Theme Management (TEMA BIRU-UNGU) --- */
 :root {
   --primary-color: #6a11cb;   /* Warna utama: Ungu */

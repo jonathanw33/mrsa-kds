@@ -28,37 +28,32 @@ class ResistanceAnalysisService:
         except ImportError:
             self.groq_service = None
         
-        # Define resistance genes and their significance - FIXED THRESHOLDS
+        # Define resistance genes and their significance
         self.resistance_genes = {
             "mecA": {
                 "description": "Methicillin resistance gene in S. aureus",
                 "resistance_to": ["methicillin", "oxacillin", "all beta-lactams"],
-                "significance_threshold": 70.0  # Lowered for real-world variants
-            },
-            "mecC": {
-                "description": "Alternative methicillin resistance gene",
-                "resistance_to": ["methicillin", "oxacillin", "all beta-lactams"],
-                "significance_threshold": 70.0  # Lowered for real-world variants
+                "significance_threshold": 95.0  # Percent identity threshold
             },
             "vanA": {
                 "description": "Vancomycin resistance gene",
                 "resistance_to": ["vancomycin"],
-                "significance_threshold": 75.0  # Lowered for real-world variants
+                "significance_threshold": 90.0
             },
             "ermA": {
                 "description": "Erythromycin resistance methylase gene",
                 "resistance_to": ["erythromycin", "clindamycin", "macrolides"],
-                "significance_threshold": 65.0  # Lowered for real-world variants
+                "significance_threshold": 90.0
             },
             "ermC": {
                 "description": "Erythromycin resistance methylase gene",
                 "resistance_to": ["erythromycin", "clindamycin", "macrolides"],
-                "significance_threshold": 65.0  # Lowered for real-world variants
+                "significance_threshold": 90.0
             },
             "tetK": {
                 "description": "Tetracycline resistance gene",
                 "resistance_to": ["tetracycline"],
-                "significance_threshold": 75.0  # Lowered for real-world variants
+                "significance_threshold": 90.0
             }
         }
     
@@ -90,8 +85,8 @@ class ResistanceAnalysisService:
                 sample_id = result.query_id  # Use the query ID as the sample ID
                 
                 for hit in result.hits:
-                    # FIXED: Better gene name extraction
-                    gene_name = self._extract_gene_name(hit.subject_id)
+                    # Extract gene name from subject ID
+                    gene_name = hit.subject_id.split('_')[0] if '_' in hit.subject_id else hit.subject_id
                     
                     # Check if this is a known resistance gene
                     if gene_name in self.resistance_genes:
@@ -114,16 +109,16 @@ class ResistanceAnalysisService:
                             )
                             matching_regions.append(region)
             
-            # Determine resistance status and confidence
+            # Determine resistance status
             if len(identified_genes) > 0:
                 resistance_status = ResistanceStatus.RESISTANT
-                # FIXED: Better confidence calculation
-                confidence_score = self._calculate_confidence_score_fixed(matching_regions, blast_results)
+                # Calculate confidence based on alignment scores and coverage
+                confidence_score = self._calculate_confidence_score(matching_regions)
             else:
                 # No resistance genes found
                 resistance_status = ResistanceStatus.SUSCEPTIBLE
-                # FIXED: More nuanced susceptible confidence calculation
-                confidence_score = self._calculate_susceptible_confidence(blast_results)
+                confidence_score = 100.0 - (len(blast_results[0].hits) * 5) if blast_results and blast_results[0].hits else 95.0  # Reduce confidence if there were some hits
+                confidence_score = max(confidence_score, 70.0)  # Minimum confidence for susceptible
             
             # Get treatment recommendations if resistance genes were found
             treatment_recommendations = None
@@ -144,44 +139,12 @@ class ResistanceAnalysisService:
             self.logger.error(f"Error analyzing resistance: {str(e)}")
             raise
     
-    def _extract_gene_name(self, subject_id: str) -> str:
+    def _calculate_confidence_score(self, matching_regions: List[MatchingRegion]) -> float:
         """
-        FIXED: Better gene name extraction from subject ID
-        
-        Args:
-            subject_id: Subject ID from BLAST hit
-            
-        Returns:
-            Extracted gene name
-        """
-        # Handle various formats like:
-        # mecA_X52593.1, mecA_KC243783.1, ermA_gene_sample.fasta, etc.
-        
-        # Split by underscore and take the first part
-        parts = subject_id.split('_')
-        gene_candidate = parts[0].lower()
-        
-        # Check if it matches any known resistance genes (case insensitive)
-        for known_gene in self.resistance_genes.keys():
-            if gene_candidate == known_gene.lower():
-                return known_gene
-        
-        # If no direct match, try looking for gene names within the ID
-        subject_lower = subject_id.lower()
-        for known_gene in self.resistance_genes.keys():
-            if known_gene.lower() in subject_lower:
-                return known_gene
-        
-        # Return the first part as fallback
-        return parts[0]
-    
-    def _calculate_confidence_score_fixed(self, matching_regions: List[MatchingRegion], blast_results: List[BlastResult]) -> float:
-        """
-        FIXED: Calculate a more nuanced confidence score for resistant samples
+        Calculate a confidence score based on matching regions
         
         Args:
             matching_regions: List of MatchingRegion objects
-            blast_results: Original BLAST results for context
             
         Returns:
             Confidence score (0-100%)
@@ -189,102 +152,35 @@ class ResistanceAnalysisService:
         if not matching_regions:
             return 0.0
         
-        # Base confidence from alignment quality
-        total_weighted_identity = 0.0
-        total_weight = 0.0
+        # Calculate weighted average of percent identity
+        total_score = 0.0
+        total_length = 0
         
         for region in matching_regions:
-            # Weight by alignment length and inverse e-value
-            weight = region.alignment_length * max(1, -1 * (region.evalue if region.evalue > 0 else 1e-100))
-            total_weighted_identity += region.percent_identity * weight
-            total_weight += weight
+            total_score += region.percent_identity * region.alignment_length
+            total_length += region.alignment_length
         
-        base_confidence = total_weighted_identity / total_weight if total_weight > 0 else 0
+        avg_identity = total_score / total_length if total_length > 0 else 0
         
-        # Coverage bonus: reward longer alignments
-        max_alignment_length = max(region.alignment_length for region in matching_regions)
-        query_length = blast_results[0].query_length if blast_results else 1000  # fallback
-        coverage_ratio = min(max_alignment_length / query_length, 1.0)
-        coverage_bonus = coverage_ratio * 15  # Up to 15% bonus
+        # Adjust confidence based on number of matching regions
+        region_count_factor = min(len(matching_regions) * 5, 20)  # Up to 20% boost for multiple regions
         
-        # Multiple gene penalty/bonus
-        unique_genes = len(set(region.gene_name for region in matching_regions))
-        if unique_genes > 1:
-            multi_gene_bonus = min((unique_genes - 1) * 3, 10)  # Up to 10% bonus
-        else:
-            multi_gene_bonus = 0
+        # Adjust confidence based on e-values
+        evalue_factor = 0.0
+        for region in matching_regions:
+            if region.evalue < 1e-100:
+                evalue_factor += 10.0
+            elif region.evalue < 1e-50:
+                evalue_factor += 5.0
+            elif region.evalue < 1e-20:
+                evalue_factor += 2.0
+        evalue_factor = min(evalue_factor, 10.0)  # Cap at 10%
         
-        # E-value bonus
-        best_evalue = min(region.evalue for region in matching_regions)
-        if best_evalue < 1e-50:
-            evalue_bonus = 8
-        elif best_evalue < 1e-20:
-            evalue_bonus = 5
-        elif best_evalue < 1e-10:
-            evalue_bonus = 3
-        else:
-            evalue_bonus = 0
+        # Calculate final confidence
+        confidence = avg_identity + region_count_factor + evalue_factor
+        confidence = min(confidence, 100.0)  # Cap at 100%
         
-        # Calculate final confidence with some randomness to avoid identical scores
-        confidence = base_confidence + coverage_bonus + multi_gene_bonus + evalue_bonus
-        
-        # Add small variation based on alignment details to make scores unique
-        variation = (sum(region.alignment_length for region in matching_regions) % 10) * 0.3
-        confidence += variation
-        
-        # Ensure confidence is in reasonable range for resistant samples
-        confidence = max(75.0, min(confidence, 99.5))
-        
-        return round(confidence, 1)
-    
-    def _calculate_susceptible_confidence(self, blast_results: List[BlastResult]) -> float:
-        """
-        FIXED: Calculate more nuanced confidence for susceptible samples
-        
-        Args:
-            blast_results: List of BLAST results
-            
-        Returns:
-            Confidence score for susceptible determination
-        """
-        if not blast_results or not blast_results[0].hits:
-            # No hits at all - very confident it's susceptible
-            return 98.0
-        
-        total_hits = len(blast_results[0].hits)
-        
-        # Check if there are any high-identity hits to resistance genes
-        resistance_gene_hits = 0
-        max_resistance_identity = 0.0
-        
-        for hit in blast_results[0].hits:
-            gene_name = self._extract_gene_name(hit.subject_id)
-            if gene_name in self.resistance_genes:
-                resistance_gene_hits += 1
-                max_resistance_identity = max(max_resistance_identity, hit.percent_identity)
-        
-        # Base confidence starts high for susceptible
-        base_confidence = 90.0
-        
-        # Penalty for resistance gene hits (even if below threshold)
-        if resistance_gene_hits > 0:
-            hit_penalty = resistance_gene_hits * 5  # 5% per resistance gene hit
-            identity_penalty = max_resistance_identity * 0.2  # Penalty based on best identity
-            base_confidence -= (hit_penalty + identity_penalty)
-        
-        # Small penalty for having many hits (suggests complex sample)
-        if total_hits > 5:
-            complexity_penalty = min((total_hits - 5) * 1, 10)  # Up to 10% penalty
-            base_confidence -= complexity_penalty
-        
-        # Add variation to make scores unique
-        variation = (total_hits % 7) * 0.4
-        base_confidence += variation
-        
-        # Ensure reasonable range for susceptible samples
-        base_confidence = max(65.0, min(base_confidence, 96.0))
-        
-        return round(base_confidence, 1)
+        return confidence
     
     def _get_treatment_recommendations(self, identified_genes: List[str]) -> TreatmentRecommendation:
         """
@@ -308,8 +204,8 @@ class ResistanceAnalysisService:
         # Define recommended antibiotics based on identified resistance
         recommended_antibiotics = []
         
-        # Check for MRSA (mecA or mecC gene)
-        if "mecA" in identified_genes or "mecC" in identified_genes:
+        # Check for MRSA (mecA gene)
+        if "mecA" in identified_genes:
             recommended_antibiotics.extend(["Vancomycin", "Linezolid", "Daptomycin", "Trimethoprim-sulfamethoxazole"])
             
             # If vanA is also present, modify recommendations

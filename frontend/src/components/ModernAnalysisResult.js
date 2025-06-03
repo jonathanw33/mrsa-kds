@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, Badge, Row, Col, Table, Alert } from 'react-bootstrap';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
+import EducationalTooltip from './EducationalTooltip';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -156,7 +157,12 @@ const ModernAnalysisResult = ({ result }) => {
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
                       <path d="M12 6v6l4 2"/>
                     </svg>
-                    Identified Resistance Genes
+                    <EducationalTooltip 
+                      term="Identified Resistance Genes" 
+                      explanation="Genes in your sequence that match known resistance genes with ≥80% similarity, indicating potential antibiotic resistance"
+                    >
+                      Identified Resistance Genes
+                    </EducationalTooltip>
                   </div>
                   <div className="info-value">
                     {result.identified_genes && result.identified_genes.length > 0 ? (
@@ -183,7 +189,14 @@ const ModernAnalysisResult = ({ result }) => {
                     <div className="confidence-score">
                       {confidenceScore.toFixed(1)}%
                     </div>
-                    <div className="confidence-label">Confidence</div>
+                    <div className="confidence-label">
+                      <EducationalTooltip 
+                        term="Confidence Score" 
+                        explanation="Indicates how certain we are about the resistance determination, based on sequence identity percentages and alignment quality"
+                      >
+                        Confidence
+                      </EducationalTooltip>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -200,7 +213,12 @@ const ModernAnalysisResult = ({ result }) => {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
               </svg>
-              Treatment Recommendations
+              <EducationalTooltip 
+                term="Treatment Recommendations" 
+                explanation="AI-powered antibiotic suggestions based on detected resistance genes. Always consult healthcare professionals for clinical decisions."
+              >
+                Treatment Recommendations
+              </EducationalTooltip>
             </h5>
           </div>
           
