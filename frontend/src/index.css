@@ -1,204 +1,162 @@
-/* --- Import Google Fonts --- */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* --- Import Modern Enhancements --- */
-@import './styles/modern-enhancements.css';
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.0%;
+    --radius: 0.75rem;
+  }
 
-/* --- Import Educational Components --- */
-@import './styles/educational.css';
-
-/* --- CSS Variables for Easy Theme Management (TEMA BIRU-UNGU) --- */
-:root {
-  --primary-color: #6a11cb;   /* Warna utama: Ungu */
-  --secondary-color: #2575fc; /* Warna sekunder: Biru */
-  --gradient-bg: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  --background-light: #f4f7fc;
-  --background-white: #ffffff;
-  --text-dark: #1e293b;
-  --text-muted: #64748b;
-  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --card-shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.12);
-  --border-radius: 0.75rem;
-}
-
-/* --- Global Styles --- */
-body {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  overflow-x: hidden;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background-light);
-  color: var(--text-dark);
-  line-height: 1.7;
-}
-
-/* --- Heading Styles --- */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-  color: var(--text-dark);
-}
-.h1, .h2, .h3, .h4, .h5, .h6 {
-  font-weight: 700 !important;
-}
-
-/* --- Styling untuk Komponen React-Bootstrap --- */
-.card {
-  border: none;
-  border-radius: var(--border-radius);
-  box-shadow: var(--card-shadow);
-  margin-bottom: 1.5rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background-color: var(--background-white);
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217.2 91.2% 59.8%;
+  }
 }
 
-.card.interactive-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--card-shadow-hover);
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
-.card-header {
-  background-color: transparent;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 1.25rem 1.5rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-dark);
+/* Custom medical/scientific themed styles */
+@layer components {
+  .medical-gradient {
+    @apply bg-gradient-to-br from-medical-600 via-medical-700 to-bio-600;
+  }
+  
+  .bio-gradient {
+    @apply bg-gradient-to-r from-bio-500 to-medical-500;
+  }
+
+  .sequence-font {
+    font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+    font-variant-ligatures: none;
+  }
+
+  .glass-effect {
+    @apply bg-background/80 backdrop-blur-sm border border-border/50;
+  }
+
+  .medical-card {
+    @apply bg-card border border-border rounded-lg p-6 shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+
+  .progress-ring {
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+  }
 }
 
-/* --- Override Bootstrap Primary Classes --- */
-.bg-primary {
-  background: var(--gradient-bg) !important;
-  border-color: transparent !important;
+/* Animation utilities */
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out;
+  }
+  
+  .animate-slide-in-right {
+    animation: slide-in-right 0.4s ease-out;
+  }
+  
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
 }
 
-/* Memastikan teks di header bg-primary tetap putih */
-.bg-primary.card-header h1, 
-.bg-primary.card-header h2, 
-.bg-primary.card-header h3,
-.bg-primary.card-header h4, 
-.bg-primary.card-header h5, 
-.bg-primary.card-header h6 {
-  color: #fff !important;
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Mengganti warna teks primary agar sesuai tema */
-.text-primary {
-  color: var(--secondary-color) !important; /* Menggunakan warna biru sebagai warna teks utama */
+@keyframes slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* --- Button Styling --- */
-.btn {
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  transition: all 0.3s ease;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-.btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
-}
-.btn-lg {
-  padding: 1rem 2.5rem;
-  font-size: 1rem;
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
-.btn-primary {
-  background: var(--gradient-bg);
-  border: none;
-  color: #fff;
-}
-.btn-primary:hover {
-  color: #fff;
-  opacity: 0.9;
+/* Sequence alignment styles */
+.sequence-alignment {
+  @apply sequence-font text-sm leading-relaxed;
 }
 
-.btn-light {
-  background-color: var(--background-white);
-  color: var(--secondary-color); /* Disesuaikan dengan warna biru */
-  border: 1px solid var(--background-white);
-}
-.btn-light:hover {
-  background-color: #f8f9fa;
-  color: var(--primary-color); /* Hover ke warna ungu */
+.sequence-match {
+  @apply bg-bio-500/20 text-bio-400;
 }
 
-/* --- Kelas Kustom untuk Tata Letak Halaman --- */
-.hero-section {
-  background: var(--gradient-bg);
-  padding: 6rem 0;
-  border-radius: 0 0 3rem 3rem;
+.sequence-mismatch {
+  @apply bg-destructive/20 text-destructive;
 }
 
-.feature-number {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--gradient-bg);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0 auto 1.5rem auto;
+.sequence-gap {
+  @apply bg-muted text-muted-foreground;
 }
 
-.how-it-works-section {
-  padding: 5rem 0;
+/* Loading states */
+.skeleton {
+  @apply animate-pulse bg-muted rounded;
 }
 
-.timeline::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 20px;
-  height: 100%;
-  width: 4px;
-  background: #e2e8f0;
-  border-radius: 2px;
-}
-
-.timeline-item {
-  margin-bottom: 2rem;
-  position: relative;
-  padding-left: 50px;
-}
-
-.timeline-item:last-child {
-    margin-bottom: 0;
-}
-
-.timeline-marker {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--gradient-bg);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  z-index: 1;
-}
-
-footer.footer,
-footer,
-.footer,
-footer.text-light,
-footer.py-4 {
-  background-color: #1a1f3a !important;
-  background: #1a1f3a !important;
+/* Focus styles for accessibility */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
 }

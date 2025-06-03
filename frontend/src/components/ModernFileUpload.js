@@ -1,303 +1,242 @@
-import React, { useState, useCallback } from 'react';
-import { Button, Alert, ProgressBar, Card } from 'react-bootstrap';
-import { useDropzone } from 'react-dropzone';
+import React, { useCallback, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn, formatFileSize } from '../lib/utils'
+import { Card, CardContent } from './ui/card'
+import { Button } from './ui/button'
+import { Alert, AlertDescription } from './ui/alert'
+import { Badge } from './ui/badge'
+import { 
+  Upload, 
+  File, 
+  X, 
+  CheckCircle, 
+  AlertCircle,
+  FileText,
+  Dna
+} from 'lucide-react'
 
-const ModernFileUpload = ({ onFileUploaded, maxSize = 10485760, acceptedFormats = ['.fasta', '.fa', '.fna'] }) => {
-  const [file, setFile] = useState(null);
-  const [error, setError] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+const ModernFileUpload = ({ 
+  onFileSelect, 
+  acceptedTypes = '.fasta,.fa,.fas,.txt',
+  maxFileSize = 10 * 1024 * 1024, // 10MB
+  className 
+}) => {
+  const [uploadedFile, setUploadedFile] = useState(null)
+  const [error, setError] = useState('')
+  const [isValidating, setIsValidating] = useState(false)
 
-  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
-    setError(null);
-    setFile(null);
-    
-    if (rejectedFiles?.length > 0) {
-      const firstError = rejectedFiles[0].errors[0];
-      if (firstError.code === 'file-too-large') {
-        setError(`File is too large. Maximum size is ${maxSize / 1024 / 1024} MB.`);
-      } else if (firstError.code === 'file-invalid-type') {
-        setError(`Invalid file type. Accepted formats: ${acceptedFormats.join(', ')}`);
-      } else {
-        setError(firstError.message || 'File not accepted.');
+  const validateFastaFile = async (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const content = e.target.result
+        const isFasta = content.startsWith('>') || content.includes('>')
+        resolve(isFasta)
       }
-      return;
+      reader.readAsText(file)
+    })
+  }
+
+  const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
+    setError('')
+    
+    if (rejectedFiles.length > 0) {
+      const rejection = rejectedFiles[0]
+      if (rejection.errors[0]?.code === 'file-too-large') {
+        setError(`File too large. Maximum size is ${formatFileSize(maxFileSize)}.`)
+      } else {
+        setError('Invalid file type. Please upload a FASTA file.')
+      }
+      return
     }
 
-    if (acceptedFiles?.length > 0) {
-      setFile(acceptedFiles[0]);
-    }
-  }, [maxSize, acceptedFormats]);
-  
-  const dropzoneAcceptOptions = acceptedFormats.reduce((acc, format) => {
-    acc[format.startsWith('.') ? format : `.${format}`] = []; 
-    return acc;
-  }, {});
+    if (acceptedFiles.length > 0) {
+      const file = acceptedFiles[0]
+      setIsValidating(true)
 
-  const { getRootProps, getInputProps, isDragActive, isFocused } = useDropzone({
+      // Validate FASTA format
+      const isValidFasta = await validateFastaFile(file)
+      
+      setIsValidating(false)
+
+      if (!isValidFasta) {
+        setError('Invalid FASTA format. File must contain sequence data starting with ">".')
+        return
+      }
+
+      setUploadedFile(file)
+      if (onFileSelect) {
+        onFileSelect(file)
+      }
+    }
+  }, [maxFileSize, onFileSelect])
+
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
     onDrop,
-    maxFiles: 1,
-    multiple: false,
-    accept: dropzoneAcceptOptions, 
-    maxSize: maxSize,
-  });
+    accept: {
+      'text/plain': ['.fasta', '.fa', '.fas', '.txt']
+    },
+    maxSize: maxFileSize,
+    multiple: false
+  })
 
-  const handleUpload = async () => {
-    if (!file) { 
-      setError('Please select a file first.'); 
-      return; 
+  const removeFile = () => {
+    setUploadedFile(null)
+    setError('')
+    if (onFileSelect) {
+      onFileSelect(null)
     }
-    
-    setUploading(true); 
-    setUploadProgress(0); 
-    setError(null);
-    
-    let currentProgress = 0;
-    const progressInterval = setInterval(() => {
-      currentProgress += 10;
-      if (currentProgress <= 95) {
-        setUploadProgress(currentProgress);
-      } else {
-        clearInterval(progressInterval);
-      }
-    }, 150);
-    
-    try {
-      await onFileUploaded(file);
-      setUploadProgress(100);
-    } catch (uploadError) {
-      setError(`Upload failed: ${uploadError.message || 'Please try again.'}`);
-      setUploadProgress(0);
-    } finally {
-      clearInterval(progressInterval);
-      setUploading(false);
-    }
-  };
+  }
 
-  const handleClear = () => {
-    setFile(null); 
-    setError(null); 
-    setUploadProgress(0);
-  };
+  const dropzoneClass = cn(
+    "relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer",
+    "hover:border-primary/50 hover:bg-accent/50",
+    isDragActive && "border-primary bg-primary/5",
+    isDragAccept && "border-bio-500 bg-bio-500/5",
+    isDragReject && "border-destructive bg-destructive/5",
+    uploadedFile && "border-bio-500 bg-bio-500/5"
+  )
 
   return (
-    <div className="modern-file-upload">
-      {error && (
-        <Alert variant="danger" onClose={() => setError(null)} dismissible className="mb-4">
-          <div className="d-flex align-items-center">
-            <i className="bi bi-exclamation-triangle-fill me-2"></i>
-            {error}
-          </div>
-        </Alert>
-      )}
-      
-      <Card className="upload-zone-card shadow-sm">
-        <div 
-          {...getRootProps()} 
-          className={`upload-dropzone ${isDragActive || isFocused ? 'active' : ''} ${file ? 'has-file' : ''}`}
-        >
-          <input {...getInputProps()} />
-          
-          <div className="upload-content text-center">
-            <div className="upload-icon-container mb-3">
-              <div className={`upload-icon ${isDragActive ? 'animate' : ''}`}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7,10 12,15 17,10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-              </div>
-            </div>
+    <div className={cn("space-y-4", className)}>
+      <Card>
+        <CardContent className="p-0">
+          <div {...getRootProps()} className={dropzoneClass}>
+            <input {...getInputProps()} />
             
-            <h5 className="upload-title mb-2">
-              {isDragActive ? 'Drop your file here' : 'Upload FASTA File'}
-            </h5>
-            
-            <p className="upload-subtitle text-muted mb-3">
-              {isDragActive ? (
-                <span className="text-primary fw-medium">Release to upload</span>
+            <motion.div
+              initial={{ scale: 1 }}
+              animate={{ 
+                scale: isDragActive ? 1.05 : 1,
+                rotateY: isDragActive ? 5 : 0
+              }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
+              {uploadedFile ? (
+                <CheckCircle className="mx-auto h-12 w-12 text-bio-500" />
               ) : (
-                <>
-                  Drag & drop your file here, or{' '}
-                  <span className="text-primary fw-medium">browse</span>
-                </>
+                <Upload className={cn(
+                  "mx-auto h-12 w-12 transition-colors",
+                  isDragActive ? "text-primary" : "text-muted-foreground"
+                )} />
               )}
-            </p>
-            
-            <div className="upload-specs">
-              <small className="text-muted">
-                Supported formats: {acceptedFormats.join(', ')} • 
-                Max size: {maxSize / 1024 / 1024} MB
-              </small>
-            </div>
-          </div>
-        </div>
-      </Card>      
-      {file && (
-        <Card className="file-preview-card mt-3 shadow-sm">
-          <Card.Body className="p-3">
-            <div className="d-flex align-items-start gap-3">
-              <div className="file-icon">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                </svg>
-              </div>
-              
-              <div className="flex-grow-1">
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <div>
-                    <h6 className="mb-1 file-name">{file.name}</h6>
-                    <small className="text-muted">
-                      {(file.size / 1024).toFixed(1)} KB
-                    </small>
-                  </div>
-                  
-                  {uploadProgress === 100 && (
-                    <div className="success-badge">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="20,6 9,17 4,12"/>
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                
-                {uploading && (
-                  <ProgressBar 
-                    now={uploadProgress} 
-                    className="mb-2 modern-progress"
-                    animated={uploadProgress < 100}
-                    variant={uploadProgress === 100 ? "success" : "primary"}
-                  />
-                )}
-                
-                <div className="d-flex gap-2">
-                  <Button 
-                    variant="primary" 
-                    size="sm"
-                    onClick={handleUpload} 
-                    disabled={uploading || uploadProgress === 100}
-                    className="btn-modern"
-                  >
-                    {uploading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Analyzing...
-                      </>
-                    ) : uploadProgress === 100 ? (
-                      <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-1">
-                          <polyline points="20,6 9,17 4,12"/>
-                        </svg>
-                        Complete
-                      </>
-                    ) : (
-                      'Start Analysis'
-                    )}
-                  </Button>
-                  
-                  <Button 
-                    variant="outline-secondary" 
-                    size="sm"
-                    onClick={handleClear} 
-                    disabled={uploading}
-                    className="btn-modern"
-                  >
-                    Clear
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card.Body>
-        </Card>
-      )}
-      
-      <style jsx>{`
-        .modern-file-upload {
-          max-width: 600px;
-          margin: 0 auto;
-        }
-        
-        .upload-zone-card {
-          border: none;
-          border-radius: 16px;
-          overflow: hidden;
-          transition: all 0.3s ease;
-        }
-        
-        .upload-dropzone {
-          padding: 3rem 2rem;
-          border: 2px dashed #e2e8f0;
-          border-radius: 16px;
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .upload-dropzone::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(135deg, var(--primary-color, #6a11cb) 0%, var(--secondary-color, #2575fc) 100%);
-          opacity: 0;
-          transition: opacity 0.3s ease;
-          z-index: 0;
-        }
-        
-        .upload-dropzone.active {
-          border-color: var(--primary-color, #6a11cb);
-          background: rgba(106, 17, 203, 0.05);
-        }
-        
-        .upload-dropzone.active::before {
-          opacity: 0.1;
-        }
-        
-        .upload-content {
-          position: relative;
-          z-index: 1;
-        }
-        
-        .upload-icon-container {
-          position: relative;
-        }
-        
-        .upload-icon {
-          width: 64px;
-          height: 64px;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          background: linear-gradient(135deg, var(--primary-color, #6a11cb) 0%, var(--secondary-color, #2575fc) 100%);
-          color: white;
-          transition: transform 0.3s ease;
-        }
-        
-        .upload-icon.animate {
-          animation: bounce 0.6s ease-in-out infinite alternate;
-        }
-        
-        @keyframes bounce {
-          to {
-            transform: translateY(-10px);
-          }
-        }: 3px;
-          overflow: hidden;
-        }
-        
-        .modern-progress .progress-bar {
-          border-radius: 3px;
-          background: linear-gradient(90deg, var(--primary-color, #6a11cb) 0%, var(--secondary-color, #2575fc) 100%);
-        }
-      `}</style>
-    </div>
-  );
-};
 
-export default ModernFileUpload;
+              <div className="space-y-2">
+                {uploadedFile ? (
+                  <>
+                    <h3 className="text-lg font-semibold text-bio-600">
+                      File Selected
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Click "Start Analysis" below to process your sequence
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold">
+                      {isDragActive ? "Drop your FASTA file here" : "Upload FASTA File"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Drag and drop or click to select a FASTA sequence file
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2">
+                <Badge variant="outline" className="text-xs">
+                  .fasta
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  .fa
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  .fas
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Max {formatFileSize(maxFileSize)}
+                </Badge>
+              </div>
+            </motion.div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* File Details */}
+      <AnimatePresence>
+        {uploadedFile && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="glass-effect">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-10 h-10 bg-bio-500/10 rounded-lg">
+                      <Dna className="h-5 w-5 text-bio-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{uploadedFile.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatFileSize(uploadedFile.size)} • FASTA sequence
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={removeFile}
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Error Message */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Validation Loading */}
+      <AnimatePresence>
+        {isValidating && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-center"
+          >
+            <div className="inline-flex items-center space-x-2 text-sm text-muted-foreground">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <span>Validating FASTA format...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+export default ModernFileUpload

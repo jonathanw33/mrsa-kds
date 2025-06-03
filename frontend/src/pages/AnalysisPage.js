@@ -1,33 +1,59 @@
 import React, { useState } from 'react';
-import { Container, Card, Form, Alert, Button, Spinner, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { Badge } from '../components/ui/badge';
 import ModernFileUpload from '../components/ModernFileUpload'; 
 import ModernAnalysisResult from '../components/ModernAnalysisResult'; 
 import AnalysisProgress from '../components/AnalysisProgress';
-import HowItWorksModal from '../components/HowItWorksModal';
-import AnalysisDetails from '../components/AnalysisDetails';
-import EducationalTooltip from '../components/EducationalTooltip';
 import { analysisService } from '../services/apiService';
-import '../styles/educational.css';
+import { 
+  Upload, 
+  FileText, 
+  Zap, 
+  Brain, 
+  BarChart3, 
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  ArrowRight,
+  RotateCcw,
+  Settings,
+  HelpCircle,
+  Microscope,
+  Dna
+} from 'lucide-react';
 
 const AnalysisPage = () => {
   const navigate = useNavigate();
+  const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [threshold, setThreshold] = useState(0.75);
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
 
-  const handleFileUpload = async (file) => {
+  const handleFileSelect = (file) => {
+    setSelectedFile(file);
+    setError(null);
+  };
+
+  const handleAnalyze = async () => {
+    if (!selectedFile) {
+      setError('Please select a file first.');
+      return;
+    }
+    
     setLoading(true);
     setAnalyzing(true);
     setError(null);
-    setResult(null); // Clear previous results
+    setResult(null);
     try {
-      const response = await analysisService.analyzeSequence(file, threshold);
+      const response = await analysisService.analyzeSequence(selectedFile, threshold);
       setResult(response.data);
-      // Simpan ke local storage
+      
+      // Save to local storage
       const savedResults = JSON.parse(localStorage.getItem('analysisResults') || '[]');
       const resultWithTimestamp = { ...response.data, savedAt: new Date().toISOString() };
       savedResults.unshift(resultWithTimestamp);
@@ -44,140 +70,151 @@ const AnalysisPage = () => {
     setResult(null);
     setError(null);
     setAnalyzing(false);
+    setSelectedFile(null);
   };
 
+  const features = [
+    {
+      icon: Zap,
+      title: "Rapid Processing",
+      description: "Advanced BLAST algorithms for fast sequence alignment"
+    },
+    {
+      icon: Brain,
+      title: "AI Analysis", 
+      description: "Machine learning models for accurate resistance prediction"
+    },
+    {
+      icon: BarChart3,
+      title: "Detailed Reports",
+      description: "Comprehensive results with confidence scores and recommendations"
+    }
+  ];
+
   return (
-    <Container className="py-5">
-      <Row className="justify-content-center">
-        <Col lg={result ? 10 : 8} xl={result ? 9 : 7}>
-          {!result ? (
-            <>
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1 className="fw-bold mb-0">Sequence Analysis</h1>
-                <Button 
-                  variant="outline-info" 
-                  size="sm"
-                  onClick={() => setShowHowItWorks(true)}
-                  className="how-it-works-btn"
-                >
-                  🧬 How It Works
-                </Button>
-              </div>
-              
-              <Card className="shadow-lg upload-with-education">
-                <Card.Header as="h2" className="h5 py-3 text-center bg-primary text-white">
-                  Upload Sequence for Analysis
-                </Card.Header>
-                <Card.Body className="p-4 p-md-5">
-                  {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
-                  
-                  <p className="text-center text-muted mb-4">
-                    Upload a bacterial DNA sequence in{' '}
-                    <EducationalTooltip 
-                      term="FASTA Format" 
-                      explanation="A text-based format for representing nucleotide sequences, starting with '>' followed by a description line and the sequence data"
-                    >
-                      FASTA format
-                    </EducationalTooltip>{' '}
-                    to identify resistance markers using{' '}
-                    <EducationalTooltip 
-                      term="BLAST Algorithm" 
-                      explanation="Basic Local Alignment Search Tool - compares your sequence against our database of known resistance genes"
-                    >
-                      BLAST analysis
-                    </EducationalTooltip>.
-                  </p>
-                  
-                  <Form.Group className="mb-4">
-                    <Form.Label className="fw-semibold">
-                      <EducationalTooltip 
-                        term="Detection Threshold" 
-                        explanation="Minimum sequence similarity percentage required to consider a gene as detected. Higher values are more stringent."
+    <div className="min-h-screen p-4">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {!result ? (
+          <>
+            {/* Header */}
+            <div className="text-center space-y-4">
+              <Badge variant="secondary" className="text-sm px-4 py-2">
+                <Microscope className="w-4 h-4 mr-2" />
+                MRSA Detection Analysis
+              </Badge>
+              <h1 className="text-4xl md:text-5xl font-bold">
+                DNA Sequence Analysis
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Upload your bacterial DNA sequence and get comprehensive antibiotic resistance analysis.
+              </p>
+            </div>
+
+            {/* Features Grid */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <Card key={index} className="text-center border-0 bg-muted/30">
+                    <CardHeader className="pb-4">
+                      <div className="mx-auto mb-2 p-3 rounded-full bg-bio-100 dark:bg-bio-900 w-12 h-12 flex items-center justify-center">
+                        <Icon className="h-6 w-6 text-bio-600 dark:text-bio-400" />
+                      </div>
+                      <CardTitle className="text-lg">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>{feature.description}</CardDescription>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Main Upload Section */}
+            <div className="max-w-4xl mx-auto">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-background to-muted/50">
+                <CardHeader className="text-center border-b bg-gradient-to-r from-bio-500 to-purple-500 text-white rounded-t-lg">
+                  <div className="flex items-center justify-center space-x-2 mb-2">
+                    <Upload className="h-6 w-6" />
+                    <CardTitle className="text-xl">Upload DNA Sequence</CardTitle>
+                  </div>
+                  <CardDescription className="text-bio-100">
+                    Ready to analyze your bacterial DNA sequence for antibiotic resistance
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="p-8 space-y-6">
+                  {error && (
+                    <Alert variant="destructive" className="mb-6">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <ModernFileUpload onFileSelect={handleFileSelect} disabled={loading} />
+
+                  {/* Analysis Button */}
+                  {selectedFile && !analyzing && (
+                    <div className="flex flex-col items-center space-y-4 pt-4 border-t">
+                      <div className="text-center space-y-2">
+                        <h3 className="text-lg font-semibold text-bio-600">Ready to Analyze</h3>
+                        <p className="text-sm text-muted-foreground">
+                          File: {selectedFile.name}
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={handleAnalyze} 
+                        size="lg" 
+                        className="px-8 py-3 text-lg bg-gradient-to-r from-bio-500 to-purple-500 hover:from-bio-600 hover:to-purple-600"
+                        disabled={loading}
                       >
-                        Detection Threshold
-                      </EducationalTooltip>: <span className="fw-bold" style={{color: 'var(--primary-color)'}}>{threshold.toFixed(2)}</span>
-                    </Form.Label>
-                    <Form.Range 
-                      min={0.5} max={0.95} step={0.05}
-                      value={threshold}
-                      onChange={(e) => setThreshold(parseFloat(e.target.value))}
-                      id="thresholdRange"
-                    />
-                    <div className="d-flex justify-content-between small text-muted">
-                      <span>0.50 (More sensitive)</span>
-                      <span>0.95 (More specific)</span>
-                    </div>
-                  </Form.Group>
-                  
-                  <ModernFileUpload 
-                    onFileUploaded={handleFileUpload}
-                    acceptedFormats={['.fasta', '.fa', '.fna']}
-                    disabled={loading}
-                  />
-                  
-                  {loading && !analyzing && (
-                    <div className="text-center mt-4">
-                      <Spinner animation="border" variant="primary" />
-                      <p className="text-muted mt-2">Analyzing... Please wait.</p>
+                        <Zap className="h-5 w-5 mr-2" />
+                        Start Analysis
+                        <ArrowRight className="h-5 w-5 ml-2" />
+                      </Button>
                     </div>
                   )}
-                </Card.Body>
+
+                  {/* Progress Section */}
+                  {analyzing && (
+                    <div className="mt-6">
+                      <AnalysisProgress />
+                    </div>
+                  )}
+                </CardContent>
               </Card>
-              
-              {/* Analysis Progress Component */}
-              <AnalysisProgress 
-                isAnalyzing={analyzing} 
-                onComplete={() => setAnalyzing(false)}
-              />
-              
-              {/* How It Works Modal */}
-              <HowItWorksModal 
-                show={showHowItWorks} 
-                onHide={() => setShowHowItWorks(false)} 
-              />
-            </>
-          ) : (
-            <>
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1 className="fw-bold mb-0">Analysis Complete</h1>
-                <Button 
-                  variant="outline-info" 
-                  size="sm"
-                  onClick={() => setShowHowItWorks(true)}
-                >
-                  🧬 How It Works
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Results Section */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 rounded-full bg-green-100 dark:bg-green-900">
+                    <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold">Analysis Complete</h1>
+                    <p className="text-muted-foreground">
+                      Your DNA sequence has been successfully analyzed
+                    </p>
+                  </div>
+                </div>
+                
+                <Button onClick={handleNewAnalysis} variant="outline">
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  New Analysis
                 </Button>
               </div>
-              
-              <Card className="shadow-lg results-with-education">
-                <Card.Body className="p-4 p-md-5">
-                  <ModernAnalysisResult result={result} />
-                  
-                  {/* Analysis Details Component */}
-                  <AnalysisDetails result={result} />
-                  
-                  <hr className="my-4"/>
-                  <div className="d-flex justify-content-center gap-3">
-                    <Button variant="primary" size="lg" onClick={() => navigate('/history')}>
-                      View History
-                    </Button>
-                    <Button variant="outline-secondary" size="lg" onClick={handleNewAnalysis}>
-                      New Analysis
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-              
-              {/* How It Works Modal for Results Page */}
-              <HowItWorksModal 
-                show={showHowItWorks} 
-                onHide={() => setShowHowItWorks(false)} 
-              />
-            </>
-          )}
-        </Col>
-      </Row>
-    </Container>
+
+              <ModernAnalysisResult result={result} />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 };
 
